@@ -1,15 +1,15 @@
-# 🏥 Frontend UI - Sistema de Gestión de Turnos Clínicos
+# Frontend UI - Sistema de Gestión de Turnos Clínicos
 
 Esta es la aplicación **Frontend (Interfaz de Cliente)** de nuestro ecosistema integral de turnos médicos en línea. Es un portal reactivo y dinámico diseñado con arquitectura modular moderna (`React` + `Vite`) y renderizado por estricta autenticación de Roles.
 
-## 🎨 Características Base
+## Características Base
 
 *   **Portal Administrativo (`Admin Dashboard`):** Control integral de usuarios (Doctores, Pacientes). Funciones de búsqueda completa, filtros por especialidad y fechas, y CRUD integrado para registrar o activar/desactivar credenciales de forma blanda (Soft Delete).
 *   **Portal de Médicos (`Doctor Dashboard`):** Agenda de citas asignadas para el día, visualización de fichas tabulares de pacientes con opción de realizar acciones para completar consultas médicas ('Completado' o 'No show').
 *   **Portal de Pacientes:** Flujo asíncrono dinámico para selección de especialidades, Doctores, visualización en Grid de horas disponibles, y agendamiento inteligente. Integración estética premium.
 *   **Rieles de Seguridad Extrema (AuthGuards):** Sistema impenetrable en cliente que expulsa a los intrusos evaluando los interceptores globalizados (`JWT` local); apoyado además por ofuscación en memoria interna (`MemoryRouter` de React) para mantener tu navegación en incognito ante intentos de secuestro (URLs internas ocultas).
 
-## 🚀 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 *   **Núcleo:** [React 19](https://react.dev/) + [Vite](https://vitejs.dev/) (Rendimiento ultra ligero)
 *   **Estilos y Componentes:** [Tailwind CSS v4](https://tailwindcss.com/) (diseñado artesanalmente con variantes de modo oscuro, UI premium de colores `indigo` y fuentes).
@@ -24,7 +24,7 @@ Necesitarás el siguiente entorno pre-instalado en tu computadora o Docker perso
 2.  **API Backend Local En Ejecución:** Esta arquitectura Front *debe consumir datos lógicos del back* que tú tienes hospedado en base local PostgreSQL. 
     > **IMPORTANTE:** Descarga o activa paralelamente el proyecto backend alojado en `gschz/gestion-turnos-api-rest.git` en Localhost o Nube antes de continuar.
 
-## 🛠️ Instalación y Rendimiento Local
+## Instalación y Rendimiento Local
 
 1. **Clona tu repositorio Frontend**
    ```bash
@@ -50,7 +50,7 @@ Necesitarás el siguiente entorno pre-instalado en tu computadora o Docker perso
    VITE_API_URL=https://tu-api_backend_despliegue.com/api/v1
    ```
 
-## 🔒 Usuarios para Pruebas Internas
+## Usuarios para Pruebas Internas
 
 La base de datos original tiene semillas de inicio (Seeds) que permitirán a cualquier persona evaluar activamente el control de roles: 
 
