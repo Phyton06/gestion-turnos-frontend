@@ -16,7 +16,7 @@ Esta es la aplicación **Frontend (Interfaz de Cliente)** de nuestro ecosistema 
 *   **Conexiones HTTP:** Integración de [Axios](https://axios-http.com/) global con cabeceras blindadas `Bearer Auth` automáticas.
 *   **Gestión de Estados e Iconos:** Manejos limpios en React Context con apoyo cosmético de paquetes livianos (`Lucide React` y `SweetAlert2` para modales).
 
-## ⚙️ Requisitos Previos
+## Requisitos Previos
 
 Necesitarás el siguiente entorno pre-instalado en tu computadora o Docker personal antes de ejecutar el panel por primera vez:
 
