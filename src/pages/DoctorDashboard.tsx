@@ -89,10 +89,10 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
-    const fetchAgenda = async (medicoId: number) => {
+    const fetchAgenda = async (usuarioId: number) => {
         setLoading(true);
         try {
-            const response = await axios.get(`/turnos/agenda?medicoId=${medicoId}`);
+            const response = await axios.get(`/turnos/agenda?usuarioId=${usuarioId}`);
             if (response.data.success) {
                 if (response.data.data.medico) {
                     setMedicoInfo(response.data.data.medico);
@@ -128,6 +128,29 @@ const DoctorDashboard: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const fetchDisponibilidad = async () => {
+        if (!medicoIdDB) return;
+        try {
+            const response = await axios.get(`/availability?fecha=${formattedSelectedDate}&medicoId=${medicoIdDB}`);
+            if (response.data.success && response.data.data.length > 0) {
+                const disponibles = response.data.data[0].slots.map((h: any) => ({
+                    id: h.id,
+                    fecha: formattedSelectedDate,
+                    hora: h.horaInicio
+                }));
+                setHuecos(disponibles);
+            } else {
+                setHuecos([]);
+            }
+        } catch (error) {
+            console.error("Error cargando disponibilidad:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchDisponibilidad();
+    }, [medicoIdDB, formattedSelectedDate]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -355,10 +378,12 @@ const DoctorDashboard: React.FC = () => {
                 setCitas(citas.map(c => c.id === cita.id ? { ...c, estado: 'no_asistio' } : c));
                 showNotification('Inasistencia registrada', 'info');
                 // Al cancelar, el bloque de horario se libera en la base de datos, 
-                // así que recargamos la agenda para que aparezca en horas libres al instante
-                if (medicoIdDB) {
-                    fetchAgenda(medicoIdDB);
+                // Al cancelar o atender, actualizar turnos y vacantes.
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    fetchAgenda(JSON.parse(userStr).id_usuario);
                 }
+                fetchDisponibilidad();
             }
         } catch (error) {
             console.error("Error marcando inasistencia:", error);
@@ -376,7 +401,9 @@ const DoctorDashboard: React.FC = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">
-                            Bienvenido, <span className="text-emerald-600">{medicoInfo.nombre}</span>
+                            Bienvenido, <span className="text-emerald-600">
+                                {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).nombre : medicoInfo.nombre}
+                            </span>
                         </h1>
                         <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">
                             {medicoInfo.especialidad || 'Especialista'} | Portal Médico
@@ -428,7 +455,11 @@ const DoctorDashboard: React.FC = () => {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 className="font-semibold text-gray-700">Pacientes Programados</h3>
-                            <button className="text-emerald-600 text-sm font-medium hover:underline" onClick={() => window.location.reload()}>Actualizar</button>
+                            <button className="text-emerald-600 text-sm font-medium hover:underline" onClick={() => {
+                                const userStr = localStorage.getItem('user');
+                                if (userStr) fetchAgenda(JSON.parse(userStr).id_usuario);
+                                fetchDisponibilidad();
+                            }}>Actualizar</button>
                         </div>
 
                         {loading ? (
