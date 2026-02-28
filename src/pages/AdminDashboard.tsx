@@ -46,7 +46,7 @@ const AdminDashboard: React.FC = () => {
         email: '',
         password: '',
         telefono: '',
-        idRol: 2, // Default Paciente
+        idRol: 3, // Default Paciente
         // Campos extra para médicos
         cedulaProfesional: '',
         idEspecialidad: 1, // Default Cardiología
@@ -90,9 +90,9 @@ const AdminDashboard: React.FC = () => {
         try {
             const user = JSON.parse(userStr);
             setAdminName(`${user.nombre || ''} ${user.apellido || ''}`.trim() || 'Administrador');
-            // Validar rol de admin (id_rol 3)
+            // Validar rol de admin (id_rol 1)
             // Usamos optional chaining y fallback por seguridad
-            if (user?.id_rol !== 3) {
+            if (user?.id_rol !== 1) {
                 // Redirigir si no es admin para evitar acceso no autorizado
                 navigate('/login');
                 return;
@@ -193,7 +193,7 @@ const AdminDashboard: React.FC = () => {
 
     const resetForm = () => {
         setFormData({
-            nombre: '', apellido: '', email: '', password: '', telefono: '', idRol: 2,
+            nombre: '', apellido: '', email: '', password: '', telefono: '', idRol: 3,
             cedulaProfesional: '', idEspecialidad: 1, horaInicio: 9, horaFin: 17, diasDescanso: [0, 6],
             isHorarioQuebrado: false,
             horariosPorDia: [
@@ -246,7 +246,7 @@ const AdminDashboard: React.FC = () => {
 
             let finalSpecialtyId = Number(formData.idEspecialidad);
 
-            if (roleId === 1) {
+            if (roleId === 2) {
                 // Si la especialidad seleccionada es "Otra" (-1), primero creamos la especialidad
                 if (finalSpecialtyId === -1 && newSpecialtyName.trim() !== '') {
                     try {
@@ -309,7 +309,7 @@ const AdminDashboard: React.FC = () => {
             if (response?.data?.success) {
                 const msg = editUserId
                     ? 'Usuario actualizado exitosamente.'
-                    : (roleId === 1 ? 'Médico registrado y agenda generada.' : 'Usuario registrado exitosamente.');
+                    : (roleId === 2 ? 'Médico registrado y agenda generada.' : 'Usuario registrado exitosamente.');
                 showNotification(msg, 'success');
 
                 resetForm();
@@ -464,14 +464,14 @@ const AdminDashboard: React.FC = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
                                 <select name="idRol" value={formData.idRol} onChange={handleInputChange} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white transition-all cursor-pointer">
-                                    <option value={1}>Médico</option>
-                                    <option value={2}>Paciente</option>
-                                    <option value={3}>Administrador</option>
+                                    <option value={1}>Administrador</option>
+                                    <option value={2}>Médico</option>
+                                    <option value={3}>Paciente</option>
                                 </select>
                             </div>
 
                             {/* Campos Condicionales para Médicos */}
-                            {Number(formData.idRol) === 1 && (
+                            {Number(formData.idRol) === 2 && (
                                 <>
                                     <div className="animate-fade-in">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
@@ -507,7 +507,7 @@ const AdminDashboard: React.FC = () => {
 
                                     <div className="animate-fade-in">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Cédula Profesional</label>
-                                        <input name="cedulaProfesional" placeholder="Ej: MED-12345" value={formData.cedulaProfesional} onChange={handleInputChange} required={Number(formData.idRol) === 1 && !editUserId} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                        <input name="cedulaProfesional" placeholder="Ej: MED-12345" value={formData.cedulaProfesional} onChange={handleInputChange} required={Number(formData.idRol) === 2 && !editUserId} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                                     </div>
 
                                     {/* Configuración de Agenda (Sólo en Creación) */}
@@ -623,9 +623,9 @@ const AdminDashboard: React.FC = () => {
                                         onChange={(e) => setFilterRol(e.target.value)}
                                     >
                                         <option value="">Todos los Roles</option>
-                                        <option value="1">Médicos</option>
-                                        <option value="2">Pacientes</option>
-                                        <option value="3">Administradores</option>
+                                        <option value="1">Administradores</option>
+                                        <option value="2">Médicos</option>
+                                        <option value="3">Pacientes</option>
                                     </select>
                                 </div>
 
@@ -699,8 +699,8 @@ const AdminDashboard: React.FC = () => {
                                             <td className="p-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm
-                                                ${user.idRol === 1 ? 'bg-blue-500' :
-                                                            user.idRol === 2 ? 'bg-emerald-500' : 'bg-purple-600'}
+                                                ${user.idRol === 1 ? 'bg-purple-600' :
+                                                            user.idRol === 2 ? 'bg-blue-500' : 'bg-emerald-500'}
                                             `}>
                                                         {user.nombre ? user.nombre.charAt(0) : 'U'}
                                                         {user.apellido ? user.apellido.charAt(0) : ''}
@@ -713,8 +713,8 @@ const AdminDashboard: React.FC = () => {
                                             </td>
                                             <td className="p-5">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border
-                                            ${user.idRol === 1 ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                        user.idRol === 2 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-purple-50 text-purple-700 border-purple-100'}
+                                            ${user.idRol === 1 ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                        user.idRol === 2 ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}
                                         `}>
                                                     {user.rol}
                                                 </span>
