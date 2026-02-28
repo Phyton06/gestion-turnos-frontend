@@ -68,6 +68,7 @@ const Dashboard: React.FC = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [disponibilidad, setDisponibilidad] = useState<MedicoAvailability[]>([]);
+    const [monthCalendar, setMonthCalendar] = useState<Record<string, string>>({});
 
     // Advanced Filtering States
     const [searchTerm, setSearchTerm] = useState('');
@@ -156,7 +157,30 @@ const Dashboard: React.FC = () => {
         setSelectedMedico(null);
         setSelectedDate(null);
         setDisponibilidad([]);
+        setMonthCalendar({});
     }, [selectedEspecialidad]);
+
+    useEffect(() => {
+        if (selectedMedico) {
+            fetchCalendarInfo();
+        } else {
+            setMonthCalendar({});
+        }
+    }, [selectedMedico, currentMonth]);
+
+    const fetchCalendarInfo = async () => {
+        if (!selectedMedico) return;
+        try {
+            const y = currentMonth.getFullYear();
+            const m = currentMonth.getMonth() + 1;
+            const res = await axios.get(`/availability/calendar?medicoId=${selectedMedico}&anio=${y}&mes=${m}`);
+            if (res.data.success) {
+                setMonthCalendar(res.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching calendar info", error);
+        }
+    };
 
     const fetchMedicos = async (espId: number) => {
         setLoadingMedicos(true);
@@ -286,22 +310,34 @@ const Dashboard: React.FC = () => {
         for (let i = 1; i <= lastDay.getDate(); i++) {
             const date = new Date(year, month, i);
             const isSelected = selectedDate?.toDateString() === date.toDateString();
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            const dateStr = `${year}-${pad(month + 1)}-${pad(i)}`;
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const isPast = date < today;
+
+            const calendarStatus = monthCalendar[dateStr];
+            const isPast = date < today || calendarStatus === 'pasado';
+            const isResting = calendarStatus === 'descanso';
+            const isFull = calendarStatus === 'lleno';
+            const isDisabled = isPast || isResting || isFull;
+
             const isToday = new Date().toDateString() === date.toDateString();
             days.push(
                 <button
                     key={i}
-                    disabled={isPast}
+                    disabled={isDisabled}
                     onClick={() => handleDateSelect(date)}
-                    className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all
+                    className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all relative
                         ${isSelected ? 'bg-blue-600 text-white shadow-lg scale-110' : 'hover:bg-blue-100 text-gray-700'}
                         ${isToday ? 'border-2 border-blue-400' : ''}
-                        ${isPast ? 'opacity-20 cursor-not-allowed grayscale' : ''}
+                        ${isDisabled ? 'opacity-30 cursor-not-allowed bg-gray-50' : ''}
+                        ${isFull && !isDisabled ? 'bg-red-50 text-red-500 hover:bg-red-100' : ''}
                     `}
                 >
                     {i}
+                    {isResting && <span className="absolute bottom-1 w-1 h-1 bg-gray-400 rounded-full"></span>}
+                    {isFull && <span className="absolute bottom-1 w-1 h-1 bg-red-400 rounded-full"></span>}
                 </button>
             );
         }
@@ -745,8 +781,9 @@ const Dashboard: React.FC = () => {
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                             {disponibilidad[0].slots.map(slot => {
                                                 const now = new Date();
-                                                const slotDateStr = selectedDate?.toISOString().split('T')[0];
-                                                const isToday = slotDateStr === now.toISOString().split('T')[0];
+                                                const pad = (n: number) => n.toString().padStart(2, '0');
+                                                const slotDateStr = `${selectedDate?.getFullYear()}-${pad(selectedDate!.getMonth() + 1)}-${pad(selectedDate!.getDate())}`;
+                                                const isToday = selectedDate?.getDate() === now.getDate() && selectedDate?.getMonth() === now.getMonth() && selectedDate?.getFullYear() === now.getFullYear();
 
                                                 // Checar si es hora pasada (si es hoy)
                                                 let isPastTime = false;
@@ -786,7 +823,8 @@ const Dashboard: React.FC = () => {
                                                     const tTotal = tH * 60 + tM;
                                                     const sTotal = sH * 60 + sM;
 
-                                                    return Math.abs(tTotal - sTotal) < 60; // Menos de 1 hora de diferencia
+                                                    // Menos de 1 hora (60 mins) de diferencia
+                                                    return Math.abs(tTotal - sTotal) < 60;
                                                 });
 
                                                 const hasConflict = !!conflictInfo;
