@@ -37,7 +37,7 @@ const DoctorDashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     // Estados para el médico y filtros
-    const [medicoInfo, setMedicoInfo] = useState({ nombre: 'Cargando...', especialidad: '' });
+    const [medicoInfo, setMedicoInfo] = useState({ nombre: 'Cargando...', especialidad: '', horariosLaborales: [] as any[] });
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     // Formato YYYY-MM-DD para filtrado
@@ -71,10 +71,12 @@ const DoctorDashboard: React.FC = () => {
 
         try {
             const user = JSON.parse(userStr);
+            let extractedIdMedico = null;
             if (user.id_medico) {
                 setMedicoIdDB(user.id_medico);
+                extractedIdMedico = user.id_medico;
             }
-            fetchAgenda();
+            fetchAgenda(extractedIdMedico);
             fetchPacientes();
         } catch (e) {
             console.error("Error leyendo usuario", e);
@@ -92,13 +94,18 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
-    const fetchAgenda = async () => {
+    const fetchAgenda = async (medicoIdToUse?: number) => {
         setLoading(true);
+        const targetMedicoId = medicoIdToUse || medicoIdDB;
+        const query = targetMedicoId ? `?medicoId=${targetMedicoId}` : '';
         try {
-            const response = await axios.get(`/turnos/agenda`);
+            const response = await axios.get(`/turnos/agenda${query}`);
             if (response.data.success) {
                 if (response.data.data.medico) {
-                    setMedicoInfo(response.data.data.medico);
+                    setMedicoInfo({
+                        ...response.data.data.medico,
+                        horariosLaborales: response.data.data.medico.horariosLaborales || []
+                    });
                     if (response.data.data.medico.id) {
                         setMedicoIdDB(response.data.data.medico.id);
                     }
@@ -124,9 +131,10 @@ const DoctorDashboard: React.FC = () => {
                     setHuecos(disponibles);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error cargando agenda:", error);
-            showNotification('Error al cargar la agenda.', 'error');
+            const msg = error.response?.data?.message || 'No se pudo sincronizar la agenda. Revisa tu conexión e intenta de nuevo.';
+            showNotification(msg, 'error');
         } finally {
             setLoading(false);
         }
@@ -449,6 +457,11 @@ const DoctorDashboard: React.FC = () => {
                                 dateFormat="dd/MM/yyyy"
                                 locale={es}
                                 minDate={new Date()}
+                                filterDate={(date) => {
+                                    if (medicoInfo.horariosLaborales.length === 0) return false;
+                                    const day = date.getDay();
+                                    return medicoInfo.horariosLaborales.some(h => h.diaSemana === day);
+                                }}
                                 className="block w-full md:w-auto pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none cursor-pointer hover:bg-white selection:bg-emerald-500"
                             />
                         </div>
