@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check } from 'lucide-react';
 import Swal from 'sweetalert2';
 
@@ -245,9 +245,9 @@ const Login: React.FC = () => {
           <div className="mt-8 text-center bg-gray-50 rounded-xl p-4 border border-gray-100">
             <p className="text-sm font-medium text-gray-500">
               ¿Eres paciente y no tienes cuenta?{' '}
-              <a href="/register" className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline inline-flex items-center gap-1 transition-colors">
+              <Link to="/register" className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline inline-flex items-center gap-1 transition-colors">
                 Regístrate aquí <AlertCircle size={14} className="opacity-0 group-hover:opacity-100" />
-              </a>
+              </Link>
             </p>
           </div>
         </div>
