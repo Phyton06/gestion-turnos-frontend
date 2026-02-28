@@ -85,7 +85,7 @@ const DoctorDashboard: React.FC = () => {
 
     const fetchPacientes = async () => {
         try {
-            const response = await axios.get('/users?roleId=2&limit=500');
+            const response = await axios.get('/users?roleId=3&limit=500'); // 3 is Paciente
             if (response.data.success) {
                 setPacientes(response.data.data.users);
             }
