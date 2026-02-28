@@ -72,7 +72,7 @@ const Login: React.FC = () => {
 
         // Pre-cargar datos del dashboard durante la espera de 8 segundos
         let preloadedHistory = null;
-        if (roleId === 2) { // Solo para pacientes por ahora
+        if (roleId === 3) { // Solo para pacientes por ahora
           try {
             const historyRes = await axios.get(`/appointments/history?pacienteId=${userId}`);
             if (historyRes.data.success) {
@@ -85,9 +85,9 @@ const Login: React.FC = () => {
 
         // Esperar 8 segundos antes de navegar
         setTimeout(() => {
-          if (roleId === 1) {
+          if (roleId === 2) {
             navigate('/doctor-dashboard');
-          } else if (roleId === 3) {
+          } else if (roleId === 1) {
             navigate('/admin-dashboard');
           } else {
             // Pasar los datos pre-cargados al dashboard

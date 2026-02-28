@@ -31,23 +31,23 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Dashboard de Pacientes (Rol 2) */}
+        {/* Dashboard de Pacientes (Rol 3) */}
         <Route path="/dashboard" element={
-          <ProtectedRoute allowedRoles={[2]}>
+          <ProtectedRoute allowedRoles={[3]}>
             <Dashboard />
           </ProtectedRoute>
         } />
 
-        {/* Dashboard de Médicos (Rol 1) */}
+        {/* Dashboard de Médicos (Rol 2) */}
         <Route path="/doctor-dashboard" element={
-          <ProtectedRoute allowedRoles={[1]}>
+          <ProtectedRoute allowedRoles={[2]}>
             <DoctorDashboard />
           </ProtectedRoute>
         } />
 
-        {/* Dashboard de Admin (Rol 3) */}
+        {/* Dashboard de Admin (Rol 1) */}
         <Route path="/admin-dashboard" element={
-          <ProtectedRoute allowedRoles={[3]}>
+          <ProtectedRoute allowedRoles={[1]}>
             <AdminDashboard />
           </ProtectedRoute>
         } />
