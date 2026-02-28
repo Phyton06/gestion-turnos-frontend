@@ -23,8 +23,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
         if (!allowedRoles.includes(user.id_rol)) {
             console.warn(`[Security] Acceso denegado: el Rol ${user.id_rol} intentó acceder a una ruta de Roles ${allowedRoles}`);
             // Redirigir a una ruta por defecto o al inicio de sesión limpiando credenciales si se intenta vulnerar
-            if (user.id_rol === 1) return <Navigate to="/doctor-dashboard" replace />;
-            if (user.id_rol === 3) return <Navigate to="/admin-dashboard" replace />;
+            if (user.id_rol === 1) return <Navigate to="/admin-dashboard" replace />;
+            if (user.id_rol === 2) return <Navigate to="/doctor-dashboard" replace />;
             return <Navigate to="/dashboard" replace />;
         }
 
