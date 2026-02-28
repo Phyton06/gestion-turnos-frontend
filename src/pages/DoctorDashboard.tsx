@@ -448,6 +448,7 @@ const DoctorDashboard: React.FC = () => {
                                 }}
                                 dateFormat="dd/MM/yyyy"
                                 locale={es}
+                                minDate={new Date()}
                                 className="block w-full md:w-auto pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none cursor-pointer hover:bg-white selection:bg-emerald-500"
                             />
                         </div>
