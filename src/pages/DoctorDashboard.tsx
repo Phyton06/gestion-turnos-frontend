@@ -71,7 +71,10 @@ const DoctorDashboard: React.FC = () => {
 
         try {
             const user = JSON.parse(userStr);
-            fetchAgenda(user.id_usuario);
+            if (user.id_medico) {
+                setMedicoIdDB(user.id_medico);
+            }
+            fetchAgenda();
             fetchPacientes();
         } catch (e) {
             console.error("Error leyendo usuario", e);
@@ -89,10 +92,10 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
-    const fetchAgenda = async (usuarioId: number) => {
+    const fetchAgenda = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`/turnos/agenda?usuarioId=${usuarioId}`);
+            const response = await axios.get(`/turnos/agenda`);
             if (response.data.success) {
                 if (response.data.data.medico) {
                     setMedicoInfo(response.data.data.medico);
@@ -286,8 +289,7 @@ const DoctorDashboard: React.FC = () => {
                     showNotification('Cita agendada correctamente', 'success');
                     const userStr = localStorage.getItem('user');
                     if (userStr) {
-                        const user = JSON.parse(userStr);
-                        fetchAgenda(user.id_usuario);
+                        fetchAgenda();
                     }
                 } else {
                     showNotification(response.data.message || 'Error al agendar cita', 'error');
@@ -381,7 +383,7 @@ const DoctorDashboard: React.FC = () => {
                 // Al cancelar o atender, actualizar turnos y vacantes.
                 const userStr = localStorage.getItem('user');
                 if (userStr) {
-                    fetchAgenda(JSON.parse(userStr).id_usuario);
+                    fetchAgenda();
                 }
                 fetchDisponibilidad();
             }
@@ -456,8 +458,7 @@ const DoctorDashboard: React.FC = () => {
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 className="font-semibold text-gray-700">Pacientes Programados</h3>
                             <button className="text-emerald-600 text-sm font-medium hover:underline" onClick={() => {
-                                const userStr = localStorage.getItem('user');
-                                if (userStr) fetchAgenda(JSON.parse(userStr).id_usuario);
+                                fetchAgenda();
                                 fetchDisponibilidad();
                             }}>Actualizar</button>
                         </div>
