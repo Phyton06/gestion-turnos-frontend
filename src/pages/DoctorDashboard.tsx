@@ -121,14 +121,17 @@ const DoctorDashboard: React.FC = () => {
                 }));
                 setCitas(agenda);
 
-                // Mapear huecos libres
-                if (response.data.data.huecos) {
+                // Mapear huecos libres (Solo si la API los manda, sino dejamos los que tiene fetchDisponibilidad)
+                if (response.data.data.huecos && response.data.data.huecos.length > 0) {
                     const disponibles = response.data.data.huecos.map((h: any) => ({
                         id: h.id,
                         fecha: h.fecha,
                         hora: h.hora
                     }));
                     setHuecos(disponibles);
+                } else if (targetMedicoId) {
+                    // Si la agenda no manda huecos, forzamos la carga de disponibilidad para la fecha seleccionada
+                    fetchDisponibilidad(targetMedicoId);
                 }
             }
         } catch (error: any) {
@@ -140,10 +143,11 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
-    const fetchDisponibilidad = async () => {
-        if (!medicoIdDB) return;
+    const fetchDisponibilidad = async (medicoIdOverride?: number) => {
+        const idToUse = medicoIdOverride || medicoIdDB;
+        if (!idToUse) return;
         try {
-            const response = await axios.get(`/availability?fecha=${formattedSelectedDate}&medicoId=${medicoIdDB}`);
+            const response = await axios.get(`/availability?fecha=${formattedSelectedDate}&medicoId=${idToUse}`);
             if (response.data.success && response.data.data.length > 0) {
                 const disponibles = response.data.data[0].slots.map((h: any) => ({
                     id: h.id,
@@ -472,8 +476,7 @@ const DoctorDashboard: React.FC = () => {
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 className="font-semibold text-gray-700">Pacientes Programados</h3>
                             <button className="text-emerald-600 text-sm font-medium hover:underline" onClick={() => {
-                                fetchAgenda();
-                                fetchDisponibilidad();
+                                fetchAgenda().then(() => fetchDisponibilidad());
                             }}>Actualizar</button>
                         </div>
 
