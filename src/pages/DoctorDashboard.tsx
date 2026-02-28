@@ -583,16 +583,28 @@ const DoctorDashboard: React.FC = () => {
                             {(() => {
                                 const now = new Date();
                                 // Create today's date string in YYYY-MM-DD format for comparison
-                                const todayStr = now.toISOString().split('T')[0];
+                                const todayStr = now.toLocaleDateString('en-CA');
                                 const isSelectedToday = formattedSelectedDate === todayStr;
 
                                 const filteredHuecos = huecos.filter(h => {
                                     if (h.fecha !== formattedSelectedDate) return false;
 
                                     if (isSelectedToday) {
-                                        const [hours, minutes] = h.hora.split(':');
-                                        const slotTime = new Date(`${h.fecha}T${hours}:${minutes}:00`);
-                                        return slotTime >= now;
+                                        // Robust regex for HH:mm AM/PM with variations (a. m. / p. m.)
+                                        const timeMatch = h.hora.match(/(\d+):(\d+)(?:\s*(am|pm|a\.\s*m\.|p\.\s*m\.))?/i);
+                                        if (timeMatch) {
+                                            let hour = parseInt(timeMatch[1]);
+                                            const minutes = parseInt(timeMatch[2]);
+                                            const ampm = timeMatch[3]?.toLowerCase();
+
+                                            // Convert to 24h for Date object comparison
+                                            if ((ampm?.includes('p') || ampm?.includes('pm')) && hour < 12) hour += 12;
+                                            if ((ampm?.includes('a') || ampm?.includes('am')) && hour === 12) hour = 0;
+
+                                            const slotTime = new Date(now);
+                                            slotTime.setHours(hour, minutes, 0, 0);
+                                            return slotTime > now;
+                                        }
                                     }
 
                                     return true;
