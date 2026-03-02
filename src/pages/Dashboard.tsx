@@ -395,9 +395,24 @@ const Dashboard: React.FC = () => {
                         {/* Quick Stats - Próxima Cita Detallada */}
                         <div className="grid grid-cols-1 gap-6">
                             {(() => {
+                                const parseDateTime = (fecha: string, hora: string) => {
+                                    const match = hora.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
+                                    if (!match) return new Date(fecha).getTime();
+
+                                    let h = parseInt(match[1]);
+                                    const m = parseInt(match[2]);
+                                    const period = (match[3] || '').toLowerCase();
+
+                                    if ((period.includes('p') || period.includes('pm')) && h < 12) h += 12;
+                                    if ((period.includes('a') || period.includes('am')) && h === 12) h = 0;
+
+                                    // Usamos un separador T para formar un string ISO-like compatible
+                                    return new Date(`${fecha}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`).getTime();
+                                };
+
                                 const proxima = [...misTurnos]
                                     .filter(t => t.estado === 'activo')
-                                    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())[0];
+                                    .sort((a, b) => parseDateTime(a.fecha, a.hora) - parseDateTime(b.fecha, b.hora))[0];
                                 return proxima ? (
                                     <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-top duration-700 relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
@@ -535,11 +550,23 @@ const Dashboard: React.FC = () => {
                                             if (weightA !== weightB) return weightA - weightB;
 
                                             // 2. Orden cronológico dentro del mismo estado
-                                            const dateA = new Date(`${a.fecha}T${a.hora.match(/\d+:\d+/)?.[0] || '00:00'}`).getTime();
-                                            const dateB = new Date(`${b.fecha}T${b.hora.match(/\d+:\d+/)?.[0] || '00:00'}`).getTime();
+                                            const parseDateTime = (fecha: string, hora: string) => {
+                                                const match = hora.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
+                                                if (!match) return new Date(fecha).getTime();
+                                                let h = parseInt(match[1]);
+                                                const m = parseInt(match[2]);
+                                                const period = (match[3] || '').toLowerCase();
+                                                if ((period.includes('p') || period.includes('pm')) && h < 12) h += 12;
+                                                if ((period.includes('a') || period.includes('am')) && h === 12) h = 0;
+                                                return new Date(`${fecha}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`).getTime();
+                                            };
 
-                                            if (a.estado === 'activo') return dateA - dateB; // Próximas: más cercanas primero
-                                            return dateB - dateA; // Pasadas/Canceladas: más recientes primero
+                                            const dateA = parseDateTime(a.fecha, a.hora);
+                                            const dateB = parseDateTime(b.fecha, b.hora);
+
+                                            // Activo: más cercanas primero. Completado/Otros: más recientes primero.
+                                            if (a.estado === 'activo') return dateA - dateB;
+                                            return dateB - dateA;
                                         });
 
                                         const totalItems = filtered.length;
