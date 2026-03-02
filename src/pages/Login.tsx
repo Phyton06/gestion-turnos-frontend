@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { saveSession, isSessionValid, getStoredUser } from '../utils/auth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +17,16 @@ const Login: React.FC = () => {
   const [welcomeName, setWelcomeName] = useState('');
 
   const navigate = useNavigate();
+
+  // Si ya tiene sesión válida, redirigir directamente
+  useEffect(() => {
+    if (isSessionValid()) {
+      const user = getStoredUser<{ id_rol: number }>();
+      if (user?.id_rol === 1) navigate('/admin-dashboard', { replace: true });
+      else if (user?.id_rol === 2) navigate('/doctor-dashboard', { replace: true });
+      else navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   // Validaciones en tiempo real
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,8 +72,11 @@ const Login: React.FC = () => {
       console.log('Login exitoso:', response.data);
 
       if (response.data.success) {
-        localStorage.setItem('token', response.data.data.token || 'session-activa');
-        localStorage.setItem('user', JSON.stringify(response.data.data));
+        // Guardar sesión con timestamp de inicio (para control de expiración de 10h)
+        saveSession(
+          response.data.data.token || 'session-activa',
+          response.data.data
+        );
 
         setWelcomeName(`${response.data.data.nombre} ${response.data.data.apellido}`);
         setRedirecting(true);

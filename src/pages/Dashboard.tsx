@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar as CalendarIcon, Clock, LogOut, Activity, User, Plus, ChevronLeft, ChevronRight, Search, FilterX } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useSessionGuard } from '../hooks/useSessionGuard';
+import { clearSession, getStoredUser } from '../utils/auth';
 
 // Interfaces
 interface Especialidad {
@@ -44,6 +46,7 @@ interface Turno {
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 const Dashboard: React.FC = () => {
+    useSessionGuard(); // Protege la ruta: chequeo en mount + timer de expiración
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -90,27 +93,19 @@ const Dashboard: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
+        // La redirección si no hay sesión la maneja useSessionGuard.
+        const user = getStoredUser<{ id_usuario?: number; nombre?: string; apellido?: string }>();
+        if (!user) return;
 
-        if (!token || !userStr) {
-            navigate('/login');
-            return;
+        setUserId(user.id_usuario ?? null);
+        setUserName(`${user.nombre ?? ''} ${user.apellido ?? ''}`.trim());
+
+        if (location.state?.initialHistory) {
+            mapAndSetTurnos(location.state.initialHistory);
+        } else {
+            fetchHistorial(user.id_usuario!);
         }
 
-        try {
-            const user = JSON.parse(userStr);
-            setUserId(user.id_usuario);
-            setUserName(`${user.nombre} ${user.apellido}`);
-
-            if (location.state?.initialHistory) {
-                mapAndSetTurnos(location.state.initialHistory);
-            } else {
-                fetchHistorial(user.id_usuario);
-            }
-        } catch (e) {
-            console.error("Error al leer usuario", e);
-        }
         fetchEspecialidades();
     }, [navigate, location.state]);
 
@@ -368,9 +363,8 @@ const Dashboard: React.FC = () => {
 
                     <button
                         onClick={() => {
-                            localStorage.removeItem('token');
-                            localStorage.removeItem('user');
-                            navigate('/login');
+                            clearSession(); // Marca logout explícito y limpia localStorage
+                            navigate('/login', { replace: true });
                         }}
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                         title="Cerrar sesión"

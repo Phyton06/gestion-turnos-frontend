@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Clock, LogOut, Activity, User, FileText, CheckCircle, XCircle, Calendar, CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useSessionGuard } from '../hooks/useSessionGuard';
+import { clearSession, getStoredUser } from '../utils/auth';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale';
@@ -26,6 +28,7 @@ interface HuecoLibre {
 }
 
 const DoctorDashboard: React.FC = () => {
+    useSessionGuard(); // Protege la ruta: chequeo en mount + timer de expiración
     const navigate = useNavigate();
     const [citas, setCitas] = useState<CitaMedica[]>([]);
     const [huecos, setHuecos] = useState<HuecoLibre[]>([]);
@@ -61,26 +64,17 @@ const DoctorDashboard: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
+        // La redirección si no hay sesión la maneja useSessionGuard.
+        const user = getStoredUser<{ id_medico?: number }>();
+        if (!user) return;
 
-        if (!token || !userStr) {
-            navigate('/login');
-            return;
+        let extractedIdMedico: number | undefined = undefined;
+        if (user.id_medico) {
+            setMedicoIdDB(user.id_medico);
+            extractedIdMedico = user.id_medico;
         }
-
-        try {
-            const user = JSON.parse(userStr);
-            let extractedIdMedico = null;
-            if (user.id_medico) {
-                setMedicoIdDB(user.id_medico);
-                extractedIdMedico = user.id_medico;
-            }
-            fetchAgenda(extractedIdMedico);
-            fetchPacientes();
-        } catch (e) {
-            console.error("Error leyendo usuario", e);
-        }
+        fetchAgenda(extractedIdMedico);
+        fetchPacientes();
     }, [navigate]);
 
     const fetchPacientes = async () => {
@@ -168,9 +162,8 @@ const DoctorDashboard: React.FC = () => {
     }, [medicoIdDB, formattedSelectedDate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
+        clearSession(); // Marca logout explícito y limpia localStorage
+        navigate('/login', { replace: true });
     };
 
     const agendarCita = async (idHorario: number, hora: string, fecha: string) => {

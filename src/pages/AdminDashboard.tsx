@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Search, UserPlus, Shield, AlertTriangle, CheckCircle, XCircle, Pencil, Filter, X, ChevronLeft, ChevronRight, Calendar, Phone, ChevronDown } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useSessionGuard } from '../hooks/useSessionGuard';
+import { clearSession, getStoredUser } from '../utils/auth';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale';
@@ -39,6 +41,7 @@ const formatPhoneNumber = (digits: string): string => {
 
 const AdminDashboard: React.FC = () => {
 
+    useSessionGuard(); // Protege la ruta: chequeo en mount + timer de expiración
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
@@ -108,30 +111,19 @@ const AdminDashboard: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
+        // La redirección si no hay sesión la maneja useSessionGuard.
+        // Aquí solo cargamos datos del usuario y verificamos el rol.
+        const user = getStoredUser<{ nombre?: string; apellido?: string; id_rol?: number }>();
+        if (!user) return; // ya fue redirigido por el hook
 
-        if (!token || !userStr) {
-            navigate('/login');
+        setAdminName(`${user.nombre || ''} ${user.apellido || ''}`.trim() || 'Administrador');
+
+        if (user.id_rol !== 1) {
+            navigate('/login', { replace: true });
             return;
         }
-
-        try {
-            const user = JSON.parse(userStr);
-            setAdminName(`${user.nombre || ''} ${user.apellido || ''}`.trim() || 'Administrador');
-            // Validar rol de admin (id_rol 1)
-            // Usamos optional chaining y fallback por seguridad
-            if (user?.id_rol !== 1) {
-                // Redirigir si no es admin para evitar acceso no autorizado
-                navigate('/login');
-                return;
-            }
-            fetchUsers();
-            fetchSpecialties();
-        } catch (e) {
-            console.error("Error validando sesión", e);
-            navigate('/login');
-        }
+        fetchUsers();
+        fetchSpecialties();
     }, [navigate]);
 
     // Cargar países desde RESTCountries API
@@ -454,9 +446,8 @@ const AdminDashboard: React.FC = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
+        clearSession(); // Marca logout explícito y limpia localStorage
+        navigate('/login', { replace: true });
     };
 
     // Filtrado y Ordenamiento
