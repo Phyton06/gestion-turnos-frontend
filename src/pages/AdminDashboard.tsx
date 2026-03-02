@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Search, UserPlus, Shield, AlertTriangle, CheckCircle, XCircle, Pencil, Filter, X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { LogOut, Search, UserPlus, Shield, AlertTriangle, CheckCircle, XCircle, Pencil, Filter, X, ChevronLeft, ChevronRight, Calendar, Phone, ChevronDown } from 'lucide-react';
 import Swal from 'sweetalert2';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -21,7 +21,24 @@ interface User {
     fechaRegistro: string;
 }
 
+interface Country {
+    code: string;
+    name: string;
+    dial: string;
+    flag: string;
+}
+
+/** Formatea hasta 10 dígitos como 111-111-11-11 */
+const formatPhoneNumber = (digits: string): string => {
+    const d = digits.slice(0, 10);
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`;
+    if (d.length <= 8) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+    return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 8)}-${d.slice(8)}`;
+};
+
 const AdminDashboard: React.FC = () => {
+
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
@@ -30,7 +47,10 @@ const AdminDashboard: React.FC = () => {
     const [filterEstado, setFilterEstado] = useState<string>('active');
     const [filterDate, setFilterDate] = useState<Date | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [perPageOpen, setPerPageOpen] = useState(false);
+    const [perPagePos, setPerPagePos] = useState({ top: 0, left: 0, width: 0 });
+    const perPageBtnRef = useRef<HTMLButtonElement>(null);
 
     // Estado para el formulario de creación/edición
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -38,6 +58,15 @@ const AdminDashboard: React.FC = () => {
     const [specialties, setSpecialties] = useState<{ id: number, nombre: string }[]>([]);
     const [showNewSpecialty, setShowNewSpecialty] = useState(false);
     const [newSpecialtyName, setNewSpecialtyName] = useState('');
+    const [countries, setCountries] = useState<Country[]>([]);
+    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+    const [phoneDigits, setPhoneDigits] = useState('');
+    const [loadingCountries, setLoadingCountries] = useState(true);
+    const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+    const [countrySearch, setCountrySearch] = useState('');
+    const countryDropdownRef = useRef<HTMLDivElement>(null);
+    const countryBtnRef = useRef<HTMLButtonElement>(null);
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
     const [adminName, setAdminName] = useState('Administrador');
 
     const [formData, setFormData] = useState({
@@ -105,6 +134,52 @@ const AdminDashboard: React.FC = () => {
         }
     }, [navigate]);
 
+    // Cargar países desde RESTCountries API
+    useEffect(() => {
+        const fetchCountries = async () => {
+            try {
+                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,idd,cca2,flag');
+                const data = await res.json();
+                const parsed: Country[] = data
+                    .filter((c: any) => c.idd?.root && c.idd?.suffixes?.length > 0)
+                    .map((c: any) => {
+                        const suffix = c.idd.suffixes.length === 1 ? c.idd.suffixes[0] : '';
+                        return { code: c.cca2, name: c.name.common, dial: `${c.idd.root}${suffix}`, flag: c.flag || '' };
+                    })
+                    .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
+                setCountries(parsed);
+                const mx = parsed.find((c: Country) => c.code === 'MX') || parsed[0];
+                setSelectedCountry(mx);
+            } catch {
+                const fallback: Country[] = [
+                    { code: 'MX', name: 'México', dial: '+52', flag: '🇲🇽' },
+                    { code: 'US', name: 'Estados Unidos', dial: '+1', flag: '🇺🇸' },
+                ];
+                setCountries(fallback);
+                setSelectedCountry(fallback[0]);
+            } finally {
+                setLoadingCountries(false);
+            }
+        };
+        fetchCountries();
+    }, []);
+
+    // Cerrar dropdown al click afuera
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            const portalDropdown = document.getElementById('admin-country-dropdown-portal');
+            if (
+                countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node) &&
+                (!portalDropdown || !portalDropdown.contains(e.target as Node))
+            ) {
+                setCountryDropdownOpen(false);
+                setCountrySearch('');
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -166,6 +241,21 @@ const AdminDashboard: React.FC = () => {
     };
 
     const openEditForm = (user: User) => {
+        // Parsear teléfono existente: separar código de área del número
+        let parsedDigits = '';
+        let parsedCountry: Country | null = selectedCountry;
+        if (user.telefono) {
+            // El formato guardado es "+52 111-111-11-11" o similar
+            const matchDial = user.telefono.match(/^(\+\d+)\s(.+)$/);
+            if (matchDial && countries.length > 0) {
+                parsedCountry = countries.find(c => c.dial === matchDial[1]) || selectedCountry;
+                parsedDigits = matchDial[2].replace(/\D/g, '').slice(0, 10);
+            } else {
+                parsedDigits = user.telefono.replace(/\D/g, '').slice(0, 10);
+            }
+        }
+        if (parsedCountry) setSelectedCountry(parsedCountry);
+        setPhoneDigits(parsedDigits);
         setFormData({
             nombre: user.nombre || '',
             apellido: user.apellido || '',
@@ -202,6 +292,7 @@ const AdminDashboard: React.FC = () => {
                 { dia: 5, horaInicio: 9, horaFin: 17 }, { dia: 6, horaInicio: 9, horaFin: 17 }, { dia: 0, horaInicio: 9, horaFin: 17 }
             ]
         });
+        setPhoneDigits('');
         setEditUserId(null);
         setShowCreateForm(false);
         setShowNewSpecialty(false);
@@ -218,13 +309,34 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    // Solo letras para nombre y apellido
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+        setFormData(prev => ({ ...prev, [e.target.name]: value }));
+    };
+
+    // Solo dígitos, máximo 10
+    const handlePhoneDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+        setPhoneDigits(raw);
+    };
+
     const handleDayToggle = (day: number) => {
         setFormData(prev => {
             const current = [...prev.diasDescanso];
+            const allDays = [0, 1, 2, 3, 4, 5, 6];
             if (current.includes(day)) {
+                // Quitar de descanso (habilitar el día) — siempre permitido
                 return { ...prev, diasDescanso: current.filter(d => d !== day) };
             } else {
-                return { ...prev, diasDescanso: [...current, day] };
+                // Agregar a descanso (deshabilitar el día) — solo si quedaría al menos 1 día laboral
+                const afterToggle = [...current, day];
+                const remainingWorkDays = allDays.filter(d => !afterToggle.includes(d));
+                if (remainingWorkDays.length === 0) {
+                    showNotification('Debe haber al menos un día laboral en la agenda del médico.', 'warning');
+                    return prev; // No cambiar
+                }
+                return { ...prev, diasDescanso: afterToggle };
             }
         });
     };
@@ -238,8 +350,27 @@ const AdminDashboard: React.FC = () => {
         }));
     };
 
+    // Solo alfanumérico para cédula profesional
+    const handleCedulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+        setFormData(prev => ({ ...prev, cedulaProfesional: value }));
+    };
+
+    // Posicionar el dropdown de países usando coordenadas fijas
+    const openCountryDropdown = () => {
+        if (countryBtnRef.current) {
+            const rect = countryBtnRef.current.getBoundingClientRect();
+            setDropdownPos({ top: rect.bottom + 6, left: rect.left, width: Math.max(rect.width, 260) });
+        }
+        setCountryDropdownOpen(o => !o);
+    };
+
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Componer teléfono con código de área
+        const telefonoFinal = phoneDigits && selectedCountry
+            ? `${selectedCountry.dial} ${formatPhoneNumber(phoneDigits)}`
+            : '';
         try {
             let response;
             const roleId = Number(formData.idRol);
@@ -269,7 +400,7 @@ const AdminDashboard: React.FC = () => {
                     nombre: formData.nombre,
                     apellido: formData.apellido,
                     email: formData.email,
-                    telefono: formData.telefono,
+                    telefono: telefonoFinal,
                     idEspecialidad: finalSpecialtyId,
                     cedulaProfesional: formData.cedulaProfesional,
                 };
@@ -294,7 +425,7 @@ const AdminDashboard: React.FC = () => {
                     nombre: formData.nombre,
                     apellido: formData.apellido,
                     email: formData.email,
-                    telefono: formData.telefono,
+                    telefono: telefonoFinal,
                     idRol: roleId
                 };
                 if (formData.password) payload.password = formData.password;
@@ -355,10 +486,10 @@ const AdminDashboard: React.FC = () => {
         .sort((a, b) => new Date(b.fechaRegistro).getTime() - new Date(a.fechaRegistro).getTime());
 
     // Paginación
-    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
     const paginatedUsers = filteredUsers.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
     );
 
     const clearFilters = () => {
@@ -369,10 +500,10 @@ const AdminDashboard: React.FC = () => {
         setCurrentPage(1);
     };
 
-    // Reset a la página 1 si cambian los filtros
+    // Reset a la página 1 si cambian los filtros o el tamaño de página
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, filterRol, filterEstado, filterDate]);
+    }, [searchTerm, filterRol, filterEstado, filterDate, itemsPerPage]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -443,11 +574,11 @@ const AdminDashboard: React.FC = () => {
                         <form onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                <input name="nombre" placeholder="Ej: Juan" value={formData.nombre} onChange={handleInputChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <input name="nombre" placeholder="Ej: Juan" value={formData.nombre} onChange={handleNameChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                                <input name="apellido" placeholder="Ej: Pérez" value={formData.apellido} onChange={handleInputChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <input name="apellido" placeholder="Ej: Pérez" value={formData.apellido} onChange={handleNameChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -459,7 +590,94 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <input name="telefono" placeholder="+54 11 1234 5678" value={formData.telefono} onChange={handleInputChange} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <div className="flex gap-2">
+                                    {/* Selector de país */}
+                                    <div className="relative flex-shrink-0" ref={countryDropdownRef}>
+                                        <button
+                                            ref={countryBtnRef}
+                                            type="button"
+                                            onClick={openCountryDropdown}
+                                            disabled={loadingCountries}
+                                            className="flex items-center gap-2 h-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                                        >
+                                            {loadingCountries ? (
+                                                <span className="text-gray-400 text-xs">...</span>
+                                            ) : selectedCountry ? (
+                                                <>
+                                                    <span className="text-lg leading-none">{selectedCountry.flag}</span>
+                                                    <span className="font-bold text-indigo-700 text-xs">{selectedCountry.dial}</span>
+                                                </>
+                                            ) : null}
+                                            <ChevronDown size={12} className={`text-gray-400 transition-transform ${countryDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        {/* Dropdown con position:fixed para escapar overflow:hidden del contenedor animado */}
+                                        {countryDropdownOpen && (
+                                            <div
+                                                style={{
+                                                    position: 'fixed',
+                                                    top: dropdownPos.top,
+                                                    left: dropdownPos.left,
+                                                    width: dropdownPos.width,
+                                                    zIndex: 99999
+                                                }}
+                                                className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                                            >
+                                                <div className="p-2 border-b border-gray-100">
+                                                    <div className="relative">
+                                                        <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                        <input
+                                                            type="text"
+                                                            autoFocus
+                                                            placeholder="Buscar país o código..."
+                                                            className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            value={countrySearch}
+                                                            onChange={e => setCountrySearch(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="max-h-52 overflow-y-auto">
+                                                    {countries.filter(c =>
+                                                        c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                                                        c.dial.includes(countrySearch)
+                                                    ).map(c => (
+                                                        <button
+                                                            key={c.code}
+                                                            type="button"
+                                                            onClick={() => { setSelectedCountry(c); setCountryDropdownOpen(false); setCountrySearch(''); }}
+                                                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-indigo-50 transition-colors
+                                                                ${selectedCountry?.code === c.code ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-gray-700'}`}
+                                                        >
+                                                            <span className="text-base leading-none flex-shrink-0">{c.flag}</span>
+                                                            <span className="flex-1 truncate">{c.name}</span>
+                                                            <span className="text-gray-400 font-mono flex-shrink-0">{c.dial}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Número con formato automático */}
+                                    <div className="relative flex-1">
+                                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                                            <Phone size={15} />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="111-111-11-11"
+                                            className="block w-full pl-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono tracking-wider text-sm"
+                                            value={formatPhoneNumber(phoneDigits)}
+                                            onChange={handlePhoneDigitsChange}
+                                            maxLength={13}
+                                        />
+                                    </div>
+                                </div>
+                                {phoneDigits.length > 0 && phoneDigits.length < 10 && (
+                                    <p className="mt-1 text-xs text-amber-600 font-medium">{10 - phoneDigits.length} dígitos restantes</p>
+                                )}
+                                {phoneDigits.length === 10 && (
+                                    <p className="mt-1 text-xs text-emerald-600 font-medium">✓ Número completo</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
@@ -507,7 +725,7 @@ const AdminDashboard: React.FC = () => {
 
                                     <div className="animate-fade-in">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Cédula Profesional</label>
-                                        <input name="cedulaProfesional" placeholder="Ej: MED-12345" value={formData.cedulaProfesional} onChange={handleInputChange} required={Number(formData.idRol) === 2 && !editUserId} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                        <input name="cedulaProfesional" placeholder="Ej: MED12345" value={formData.cedulaProfesional} onChange={handleCedulaChange} required={Number(formData.idRol) === 2 && !editUserId} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                                     </div>
 
                                     {/* Configuración de Agenda (Sólo en Creación) */}
@@ -765,17 +983,72 @@ const AdminDashboard: React.FC = () => {
                                 </tbody>
                             </table>
 
-                            {/* Paginación */}
-                            {totalPages > 1 && (
-                                <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
-                                    <div className="text-sm text-gray-500">
-                                        Mostrando página <span className="font-semibold text-gray-900">{currentPage}</span> de <span className="font-semibold text-gray-900">{totalPages}</span>
+                            {/* Barra de paginación siempre visible */}
+                            <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/30">
+                                {/* Selector de filas por página — dropdown con position:fixed */}
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <span>Mostrar</span>
+                                    <div className="relative">
+                                        <button
+                                            ref={perPageBtnRef}
+                                            type="button"
+                                            onClick={() => {
+                                                if (perPageBtnRef.current) {
+                                                    const rect = perPageBtnRef.current.getBoundingClientRect();
+                                                    setPerPagePos({ top: rect.top, left: rect.left, width: rect.width });
+                                                }
+                                                setPerPageOpen(o => !o);
+                                            }}
+                                            className="flex items-center gap-1.5 px-3 h-8 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:border-indigo-400 hover:text-indigo-700 transition-colors shadow-sm"
+                                        >
+                                            {itemsPerPage}
+                                            <ChevronDown size={12} className={`text-gray-400 transition-transform ${perPageOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {perPageOpen && (
+                                            <>
+                                                {/* Capa invisible para cerrar al hacer clic fuera */}
+                                                <div className="fixed inset-0 z-[99990]" onClick={() => setPerPageOpen(false)} />
+                                                <div
+                                                    style={{
+                                                        position: 'fixed',
+                                                        bottom: `calc(100vh - ${perPagePos.top}px)`,
+                                                        left: perPagePos.left,
+                                                        minWidth: Math.max(perPagePos.width, 120),
+                                                        zIndex: 99999
+                                                    }}
+                                                    className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                                                >
+                                                    {[5, 10, 15, 20].map(n => (
+                                                        <button
+                                                            key={n}
+                                                            type="button"
+                                                            onClick={() => { setItemsPerPage(n); setPerPageOpen(false); }}
+                                                            className={`w-full px-4 py-2 text-xs text-left font-medium transition-colors hover:bg-indigo-50 ${itemsPerPage === n
+                                                                ? 'bg-indigo-50 text-indigo-700 font-bold'
+                                                                : 'text-gray-700'
+                                                                }`}
+                                                        >
+                                                            {n}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
+                                    <span>por página</span>
+                                </div>
+
+                                {/* Info de página + botones de navegación */}
+                                {totalPages > 1 && (
                                     <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-500">
+                                            Pág. <span className="font-semibold text-gray-900">{currentPage}</span> / <span className="font-semibold text-gray-900">{totalPages}</span>
+                                        </span>
                                         <button
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="p-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-white hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="p-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-white hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                         >
                                             <ChevronLeft size={18} />
                                         </button>
@@ -783,7 +1056,6 @@ const AdminDashboard: React.FC = () => {
                                         <div className="flex items-center gap-1">
                                             {Array.from({ length: totalPages }).map((_, i) => {
                                                 const page = i + 1;
-                                                // Lógica simple para no mostrar demasiados botones de paginación
                                                 if (
                                                     page === 1 ||
                                                     page === totalPages ||
@@ -803,7 +1075,7 @@ const AdminDashboard: React.FC = () => {
                                                     );
                                                 }
                                                 if (page === currentPage - 2 || page === currentPage + 2) {
-                                                    return <span key={page} className="text-gray-400">...</span>;
+                                                    return <span key={page} className="text-gray-400 text-sm">...</span>;
                                                 }
                                                 return null;
                                             })}
@@ -812,13 +1084,13 @@ const AdminDashboard: React.FC = () => {
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="p-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-white hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="p-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-white hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                         >
                                             <ChevronRight size={18} />
                                         </button>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>

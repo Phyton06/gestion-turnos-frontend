@@ -1,8 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus, User, Lock, Mail, Phone } from 'lucide-react';
+import { UserPlus, User, Lock, Mail, Phone, ChevronDown, Search } from 'lucide-react';
 import Swal from 'sweetalert2';
+
+interface Country {
+    code: string;
+    name: string;
+    dial: string;
+    flag: string;
+}
+
+/** Formatea hasta 10 dígitos como 111-111-11-11 */
+const formatPhoneNumber = (digits: string): string => {
+    const d = digits.slice(0, 10);
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`;
+    if (d.length <= 8) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+    return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 8)}-${d.slice(8)}`;
+};
 
 const Register: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -11,40 +27,117 @@ const Register: React.FC = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        telefono: ''
     });
 
+    const [countries, setCountries] = useState<Country[]>([]);
+    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+    const [phoneDigits, setPhoneDigits] = useState('');
+    const [loadingCountries, setLoadingCountries] = useState(true);
     const [loading, setLoading] = useState(false);
+
+    // Dropdown de países
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
     const navigate = useNavigate();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+    // Cargar países desde RESTCountries API al montar
+    useEffect(() => {
+        const fetchCountries = async () => {
+            try {
+                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,idd,cca2,flag');
+                const data = await res.json();
+
+                const parsed: Country[] = data
+                    .filter((c: any) => c.idd?.root && c.idd?.suffixes?.length > 0)
+                    .map((c: any) => {
+                        const suffix = c.idd.suffixes.length === 1 ? c.idd.suffixes[0] : '';
+                        const dial = `${c.idd.root}${suffix}`;
+                        return {
+                            code: c.cca2,
+                            name: c.name.common,
+                            dial,
+                            flag: c.flag || '',  // emoji de bandera (ej: 🇲🇽)
+                        };
+                    })
+                    .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
+
+                setCountries(parsed);
+                // Seleccionar México por defecto
+                const mx = parsed.find((c: Country) => c.code === 'MX') || parsed[0];
+                setSelectedCountry(mx);
+            } catch {
+                // Fallback mínimo si la API falla
+                const fallback: Country[] = [
+                    { code: 'MX', name: 'México', dial: '+52', flag: '🇲🇽' },
+                    { code: 'US', name: 'Estados Unidos', dial: '+1', flag: '🇺🇸' },
+                    { code: 'AR', name: 'Argentina', dial: '+54', flag: '🇦🇷' },
+                    { code: 'CO', name: 'Colombia', dial: '+57', flag: '🇨🇴' },
+                    { code: 'ES', name: 'España', dial: '+34', flag: '🇪🇸' },
+                ];
+                setCountries(fallback);
+                setSelectedCountry(fallback[0]);
+            } finally {
+                setLoadingCountries(false);
+            }
+        };
+        fetchCountries();
+    }, []);
+
+    // Cerrar dropdown al hacer clic afuera
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+                setSearch('');
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    // Solo letras (incluyendo acentos y ñ) para nombre y apellido
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+        setFormData({ ...formData, [e.target.name]: value });
     };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Solo dígitos, máximo 10
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+        setPhoneDigits(raw);
+    };
+
+    const filteredCountries = countries.filter(c =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.dial.includes(search)
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de validación',
-                text: 'Las contraseñas no coinciden.'
-            });
+            Swal.fire({ icon: 'error', title: 'Error de validación', text: 'Las contraseñas no coinciden.' });
             return;
         }
 
-        setLoading(true);
+        const telefonoFinal = phoneDigits && selectedCountry
+            ? `${selectedCountry.dial} ${formatPhoneNumber(phoneDigits)}`
+            : '';
 
+        setLoading(true);
         try {
             const response = await axios.post('/auth/register', {
                 nombre: formData.nombre,
                 apellido: formData.apellido,
                 email: formData.email,
                 password: formData.password,
-                telefono: formData.telefono
+                telefono: telefonoFinal
             });
 
             if (response.data.success) {
@@ -55,27 +148,13 @@ const Register: React.FC = () => {
                     timer: 2000,
                     showConfirmButton: false
                 });
-                // Redirigir a login
                 navigate('/login');
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de registro',
-                    text: response.data.message || 'Error al registrarse'
-                });
+                Swal.fire({ icon: 'error', title: 'Error de registro', text: response.data.message || 'Error al registrarse' });
             }
-
         } catch (err: any) {
-            console.error('Error en registro:', err);
-            let message = 'Error de conexión con el servidor.';
-            if (err.response) {
-                message = err.response.data.message || 'Error al procesar el registro.';
-            }
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: message
-            });
+            const message = err.response?.data?.message || 'Error de conexión con el servidor.';
+            Swal.fire({ icon: 'error', title: 'Oops...', text: message });
         } finally {
             setLoading(false);
         }
@@ -110,7 +189,7 @@ const Register: React.FC = () => {
                                     className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                                     placeholder="Juan"
                                     value={formData.nombre}
-                                    onChange={handleChange}
+                                    onChange={handleNameChange}
                                 />
                             </div>
                         </div>
@@ -129,7 +208,7 @@ const Register: React.FC = () => {
                                     className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                                     placeholder="Pérez"
                                     value={formData.apellido}
-                                    onChange={handleChange}
+                                    onChange={handleNameChange}
                                 />
                             </div>
                         </div>
@@ -153,22 +232,102 @@ const Register: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Teléfono */}
+                        {/* Teléfono con selector de país personalizado */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono (Opcional)</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                    <Phone size={18} />
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Teléfono <span className="text-gray-400 font-normal">(Opcional)</span>
+                            </label>
+                            <div className="flex gap-2">
+
+                                {/* Selector de país con dropdown personalizado */}
+                                <div className="relative flex-shrink-0" ref={dropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setDropdownOpen(o => !o)}
+                                        disabled={loadingCountries}
+                                        className="flex items-center gap-2 h-full px-4 py-2.5 border border-gray-300 rounded-xl bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                                    >
+                                        {loadingCountries ? (
+                                            <span className="text-gray-400">Cargando...</span>
+                                        ) : selectedCountry ? (
+                                            <>
+                                                <span className="text-xl leading-none">{selectedCountry.flag}</span>
+                                                <span className="font-bold text-indigo-700">{selectedCountry.dial}</span>
+                                            </>
+                                        ) : null}
+                                        <ChevronDown size={14} className={`text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {/* Dropdown de países con búsqueda */}
+                                    {dropdownOpen && (
+                                        <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                                            {/* Buscar */}
+                                            <div className="p-3 border-b border-gray-100">
+                                                <div className="relative">
+                                                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                    <input
+                                                        type="text"
+                                                        autoFocus
+                                                        placeholder="Buscar país o código..."
+                                                        className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        value={search}
+                                                        onChange={e => setSearch(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {/* Lista */}
+                                            <div className="max-h-56 overflow-y-auto">
+                                                {filteredCountries.length === 0 ? (
+                                                    <div className="px-4 py-3 text-sm text-gray-400 text-center">No se encontraron países</div>
+                                                ) : filteredCountries.map(c => (
+                                                    <button
+                                                        key={c.code}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedCountry(c);
+                                                            setDropdownOpen(false);
+                                                            setSearch('');
+                                                        }}
+                                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-indigo-50 transition-colors
+                                                            ${selectedCountry?.code === c.code ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-gray-700'}`}
+                                                    >
+                                                        <span className="text-lg leading-none flex-shrink-0">{c.flag}</span>
+                                                        <span className="flex-1 truncate">{c.name}</span>
+                                                        <span className="text-gray-400 font-mono text-xs flex-shrink-0">{c.dial}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                <input
-                                    type="tel"
-                                    name="telefono"
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                    placeholder="+54 11 1234 5678"
-                                    value={formData.telefono}
-                                    onChange={handleChange}
-                                />
+
+                                {/* Número con formato automático */}
+                                <div className="relative flex-1">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                        <Phone size={18} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        name="telefono"
+                                        className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-mono tracking-wider"
+                                        placeholder="111-111-11-11"
+                                        value={formatPhoneNumber(phoneDigits)}
+                                        onChange={handlePhoneChange}
+                                        maxLength={13}
+                                    />
+                                </div>
                             </div>
+
+                            {/* Indicador de progreso del número */}
+                            {phoneDigits.length > 0 && phoneDigits.length < 10 && (
+                                <p className="mt-1.5 text-xs text-amber-600 font-medium">
+                                    {10 - phoneDigits.length} dígito{10 - phoneDigits.length !== 1 ? 's' : ''} restante{10 - phoneDigits.length !== 1 ? 's' : ''}
+                                </p>
+                            )}
+                            {phoneDigits.length === 10 && (
+                                <p className="mt-1.5 text-xs text-emerald-600 font-medium">✓ Número completo</p>
+                            )}
                         </div>
 
                         {/* Contraseña */}
@@ -204,13 +363,16 @@ const Register: React.FC = () => {
                                     required
                                     minLength={6}
                                     className={`block w-full pl-10 py-2.5 border rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors
-                                ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-300'}
-                            `}
+                                        ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-300'}
+                                    `}
                                     placeholder="******"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
                                 />
                             </div>
+                            {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                                <p className="mt-1 text-xs text-red-500 font-medium">Las contraseñas no coinciden</p>
+                            )}
                         </div>
 
                     </div>
@@ -220,8 +382,8 @@ const Register: React.FC = () => {
                             type="submit"
                             disabled={loading}
                             className={`w-full flex justify-center py-4 px-4 border border-transparent text-sm font-bold rounded-xl text-white outline-none focus:ring-4 focus:ring-indigo-500/20 shadow-md hover:shadow-lg active:scale-95 transition-all
-                        ${loading ? 'bg-gray-400 cursor-not-allowed transform-none shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800'}
-                    `}
+                                ${loading ? 'bg-gray-400 cursor-not-allowed transform-none shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800'}
+                            `}
                         >
                             {loading ? 'Registrando...' : 'Crear Cuenta'}
                         </button>

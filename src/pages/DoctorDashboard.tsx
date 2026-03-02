@@ -183,7 +183,12 @@ const DoctorDashboard: React.FC = () => {
             return;
         }
 
+        // Convertir el horario seleccionado a minutos UTC para comparar conflictos del paciente
+        const slotDate = new Date(idHorario);
+        const slotMinutes = slotDate.getUTCHours() * 60 + slotDate.getUTCMinutes();
+
         const result = await Swal.fire({
+
             title: 'Agendar Cita',
             html: `
                 <div class="mt-4 mb-2 text-left relative" id="paciente-select-wrapper">
@@ -196,8 +201,9 @@ const DoctorDashboard: React.FC = () => {
                         autocomplete="off"
                     >
                     <input type="hidden" id="paciente-selected-id">
-                    <div id="paciente-dropdown" class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto text-sm text-left">
-                    </div>
+                </div>
+                <div id="patient-conflict-warning" class="hidden mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold text-left">
+                    ⚠️ El paciente ya tiene una consulta agendada muy cercana a las ${hora}. Para respetar el tiempo de traslado entre consultorios, debe haber al menos 1 hora entre citas.
                 </div>
                 <div class="mt-5 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-4">
                     <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl shadow-inner shrink-0">
@@ -221,10 +227,64 @@ const DoctorDashboard: React.FC = () => {
                 htmlContainer: 'm-0 p-0 overflow-visible'
             },
             buttonsStyling: false,
+            willClose: () => {
+                const existingDropdown = document.getElementById('paciente-dropdown-fixed');
+                if (existingDropdown) existingDropdown.remove();
+            },
+
             didOpen: () => {
                 const searchInput = document.getElementById('paciente-search') as HTMLInputElement;
-                const dropdown = document.getElementById('paciente-dropdown') as HTMLDivElement;
                 const hiddenInput = document.getElementById('paciente-selected-id') as HTMLInputElement;
+                const conflictWarning = document.getElementById('patient-conflict-warning') as HTMLDivElement;
+                const confirmBtn = Swal.getConfirmButton();
+
+                // Crear el dropdown como elemento fixed en el body (flota sobre todo el modal)
+                const dropdown = document.createElement('div');
+                dropdown.id = 'paciente-dropdown-fixed';
+                dropdown.className = 'hidden bg-white border border-gray-100 rounded-xl shadow-2xl overflow-y-auto text-sm text-left';
+                dropdown.style.cssText = 'position:fixed; z-index:99999; max-height:220px; min-width:300px;';
+                document.body.appendChild(dropdown);
+
+                const positionDropdown = () => {
+                    const rect = searchInput.getBoundingClientRect();
+                    dropdown.style.top = `${rect.bottom + 6}px`;
+                    dropdown.style.left = `${rect.left}px`;
+                    dropdown.style.width = `${rect.width}px`;
+                };
+
+                const showDropdown = () => {
+                    positionDropdown();
+                    dropdown.classList.remove('hidden');
+                };
+                const hideDropdown = () => dropdown.classList.add('hidden');
+
+                // Deshabilitar confirmar hasta que se seleccione un paciente válido
+                if (confirmBtn) confirmBtn.setAttribute('disabled', 'true');
+
+                // Verifica si el paciente tiene citas en conflicto para esa fecha y horario
+                const checkPatientConflict = async (pacienteId: number): Promise<boolean> => {
+                    try {
+                        const res = await fetch(`/api/v1/appointments?pacienteId=${pacienteId}`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        const data = await res.json();
+                        if (!data.success) return false;
+
+                        const citasDelDia = (data.data as any[]).filter(c => c.fecha === fecha && c.estado === 'activo');
+                        return citasDelDia.some(c => {
+                            const match = c.hora.match(/(\d+):(\d+)/);
+                            if (!match) return false;
+                            let h = parseInt(match[1], 10);
+                            const m = parseInt(match[2], 10);
+                            if (c.hora.toLowerCase().includes('p') && h !== 12) h += 12;
+                            if (c.hora.toLowerCase().includes('a') && h === 12) h = 0;
+                            const citaMinutes = h * 60 + m;
+                            return Math.abs(citaMinutes - slotMinutes) < 60;
+                        });
+                    } catch {
+                        return false;
+                    }
+                };
 
                 const renderOptions = (filterText: string) => {
                     dropdown.innerHTML = '';
@@ -248,10 +308,29 @@ const DoctorDashboard: React.FC = () => {
                             div.appendChild(nameSpan);
                             if (p.email) div.appendChild(emailSpan);
 
-                            div.onclick = () => {
+                            div.onclick = async () => {
                                 searchInput.value = `${p.nombre} ${p.apellido}`;
                                 hiddenInput.value = p.id.toString();
                                 dropdown.classList.add('hidden');
+                                conflictWarning.classList.add('hidden');
+                                if (confirmBtn) confirmBtn.setAttribute('disabled', 'true');
+
+                                const hasConflict = await checkPatientConflict(p.id);
+                                if (hasConflict) {
+                                    conflictWarning.classList.remove('hidden');
+                                    if (confirmBtn) {
+                                        confirmBtn.setAttribute('disabled', 'true');
+                                        confirmBtn.style.opacity = '0.4';
+                                        confirmBtn.style.cursor = 'not-allowed';
+                                    }
+                                } else {
+                                    conflictWarning.classList.add('hidden');
+                                    if (confirmBtn) {
+                                        confirmBtn.removeAttribute('disabled');
+                                        confirmBtn.style.opacity = '';
+                                        confirmBtn.style.cursor = '';
+                                    }
+                                }
                             };
                             dropdown.appendChild(div);
                         });
@@ -259,20 +338,26 @@ const DoctorDashboard: React.FC = () => {
                 };
 
                 searchInput.addEventListener('input', (e) => {
-                    dropdown.classList.remove('hidden');
+                    showDropdown();
                     renderOptions((e.target as HTMLInputElement).value);
-                    hiddenInput.value = ''; // Reset selected ID on manual edit
+                    hiddenInput.value = '';
+                    conflictWarning.classList.add('hidden');
+                    if (confirmBtn) {
+                        confirmBtn.setAttribute('disabled', 'true');
+                        confirmBtn.style.opacity = '';
+                        confirmBtn.style.cursor = '';
+                    }
                 });
 
                 searchInput.addEventListener('focus', () => {
-                    dropdown.classList.remove('hidden');
+                    showDropdown();
                     renderOptions(searchInput.value);
                 });
 
                 document.addEventListener('click', (e) => {
                     const wrapper = document.getElementById('paciente-select-wrapper');
-                    if (wrapper && !wrapper.contains(e.target as Node)) {
-                        dropdown.classList.add('hidden');
+                    if (wrapper && !wrapper.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+                        hideDropdown();
                     }
                 });
             },
@@ -619,7 +704,9 @@ const DoctorDashboard: React.FC = () => {
                             <Activity size={120} />
                         </div>
                         <h3 className="font-black text-emerald-100 mb-1 text-sm uppercase tracking-widest flex items-center gap-2"><Calendar size={14} /> Estadísticas de hoy</h3>
-                        <div className="text-6xl font-black mb-6 tracking-tighter">{citas.filter(c => c.fecha === formattedSelectedDate).length}</div>
+                        <div className="text-6xl font-black mb-6 tracking-tighter">
+                            {citas.filter(c => c.fecha === formattedSelectedDate && c.estado !== 'cancelado').length}
+                        </div>
                         <div className="flex flex-col gap-2 text-sm font-bold">
                             <span className="bg-white/20 px-3 py-2 rounded-xl flex justify-between items-center backdrop-blur-sm">
                                 <span>✅ Atendidos</span>
@@ -628,6 +715,10 @@ const DoctorDashboard: React.FC = () => {
                             <span className="bg-black/20 px-3 py-2 rounded-xl flex justify-between items-center backdrop-blur-sm">
                                 <span>⏳ Pendientes</span>
                                 <span>{citas.filter(c => c.fecha === formattedSelectedDate && c.estado === 'activo').length}</span>
+                            </span>
+                            <span className="bg-orange-400/30 px-3 py-2 rounded-xl flex justify-between items-center backdrop-blur-sm">
+                                <span>🚫 Inasistencias</span>
+                                <span>{citas.filter(c => c.fecha === formattedSelectedDate && c.estado === 'no_asistio').length}</span>
                             </span>
                         </div>
                     </div>
