@@ -18,6 +18,7 @@ interface User {
     email: string;
     rol: string;
     idRol: number;
+    medicoId?: number;
     estado: boolean;
     telefono: string | null;
     fechaRegistro: string;
@@ -58,6 +59,7 @@ const AdminDashboard: React.FC = () => {
     // Estado para el formulario de creación/edición
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editUserId, setEditUserId] = useState<number | null>(null);
+    const [editMedicoId, setEditMedicoId] = useState<number | null>(null);
     const [specialties, setSpecialties] = useState<{ id: number, nombre: string }[]>([]);
     const [showNewSpecialty, setShowNewSpecialty] = useState(false);
     const [newSpecialtyName, setNewSpecialtyName] = useState('');
@@ -268,6 +270,7 @@ const AdminDashboard: React.FC = () => {
             ]
         });
         setEditUserId(user.id);
+        setEditMedicoId(user.medicoId || null);
         setShowNewSpecialty(false);
         setNewSpecialtyName('');
         setShowCreateForm(true);
@@ -286,6 +289,7 @@ const AdminDashboard: React.FC = () => {
         });
         setPhoneDigits('');
         setEditUserId(null);
+        setEditMedicoId(null);
         setShowCreateForm(false);
         setShowNewSpecialty(false);
         setNewSpecialtyName('');
@@ -399,7 +403,9 @@ const AdminDashboard: React.FC = () => {
                 if (formData.password) payload.password = formData.password;
 
                 if (editUserId) {
-                    response = await axios.put(`/medicos/${editUserId}`, payload);
+                    // Si ya existe el medicoId, lo usamos. Si no existe (raro), fallaría o usaríamos el userId si fuera compatible (pero no lo es)
+                    const targetId = editMedicoId || editUserId;
+                    response = await axios.put(`/medicos/${targetId}`, payload);
                 } else {
                     payload.agenda = {
                         horaInicio: Number(formData.horaInicio),
