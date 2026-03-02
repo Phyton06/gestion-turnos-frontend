@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check } from 'lucide-react';
+import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { saveSession, isSessionValid, getStoredUser } from '../utils/auth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,35 @@ const Login: React.FC = () => {
   const [redirecting, setRedirecting] = useState(false);
   const [welcomeName, setWelcomeName] = useState('');
 
+  // ── Estados para restablecimiento de contraseña ──
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetStep, setResetStep] = useState<1 | 2 | 3>(1); // 1=email, 2=code, 3=new password
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetCountdown, setResetCountdown] = useState(0);
+
   const navigate = useNavigate();
+
+  // Si ya tiene sesión válida, redirigir directamente
+  useEffect(() => {
+    if (isSessionValid()) {
+      const user = getStoredUser<{ id_rol: number }>();
+      if (user?.id_rol === 1) navigate('/admin-dashboard', { replace: true });
+      else if (user?.id_rol === 2) navigate('/doctor-dashboard', { replace: true });
+      else navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  // Timer de conteo regresivo para el código de 5 minutos
+  useEffect(() => {
+    if (resetCountdown <= 0) return;
+    const timer = setInterval(() => setResetCountdown(prev => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [resetCountdown]);
 
   // Validaciones en tiempo real
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,8 +90,11 @@ const Login: React.FC = () => {
       console.log('Login exitoso:', response.data);
 
       if (response.data.success) {
-        localStorage.setItem('token', response.data.data.token || 'session-activa');
-        localStorage.setItem('user', JSON.stringify(response.data.data));
+        // Guardar sesión con timestamp de inicio (para control de expiración de 10h)
+        saveSession(
+          response.data.data.token || 'session-activa',
+          response.data.data
+        );
 
         setWelcomeName(`${response.data.data.nombre} ${response.data.data.apellido}`);
         setRedirecting(true);
@@ -240,6 +272,17 @@ const Login: React.FC = () => {
               </span>
               {loading ? 'Validando...' : 'Iniciar Sesión'}
             </button>
+
+            {/* Enlace de olvidé contraseña */}
+            <div className="text-center mt-3">
+              <button
+                type="button"
+                onClick={() => { setShowResetModal(true); setResetStep(1); setResetMessage(''); setResetEmail(''); setResetCode(''); setResetNewPassword(''); setResetConfirmPassword(''); }}
+                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
           </form>
 
           <div className="mt-8 text-center bg-gray-50 rounded-xl p-4 border border-gray-100">
@@ -252,6 +295,245 @@ const Login: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Modal de Restablecer Contraseña ───────────────────────────────── */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 text-white flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-xl">
+                <KeyRound size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Restablecer Contraseña</h3>
+                <p className="text-indigo-100 text-xs mt-0.5">
+                  {resetStep === 1 && 'Paso 1 de 3 — Ingresa tu correo'}
+                  {resetStep === 2 && 'Paso 2 de 3 — Verifica el código'}
+                  {resetStep === 3 && 'Paso 3 de 3 — Nueva contraseña'}
+                </p>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1 bg-gray-100">
+              <div
+                className="h-full bg-indigo-500 transition-all duration-500"
+                style={{ width: `${(resetStep / 3) * 100}%` }}
+              />
+            </div>
+
+            <div className="p-6">
+              {/* Mensaje de feedback */}
+              {resetMessage && (
+                <div className={`mb-4 p-3 rounded-lg text-sm flex items-start gap-2 ${resetMessage.includes('Error') || resetMessage.includes('incorrecto') || resetMessage.includes('expirado')
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  }`}>
+                  <Shield size={16} className="flex-shrink-0 mt-0.5" />
+                  <span>{resetMessage}</span>
+                </div>
+              )}
+
+              {/* ── Paso 1: Email ── */}
+              {resetStep === 1 && (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500">
+                    Ingresa el correo electrónico asociado a tu cuenta.
+                  </p>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder="tu-correo@ejemplo.com"
+                      value={resetEmail}
+                      onChange={e => setResetEmail(e.target.value)}
+                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!resetEmail || !/\S+@\S+\.\S+/.test(resetEmail)) {
+                        setResetMessage('Por favor ingresa un correo válido.');
+                        return;
+                      }
+                      setResetLoading(true);
+                      setResetMessage('');
+                      try {
+                        const res = await axios.post('/auth/forgot-password', { email: resetEmail });
+                        setResetMessage(res.data.message);
+                        setResetStep(2);
+                        setResetCountdown(300); // 5 minutos
+                      } catch {
+                        setResetMessage('Si tu correo está registrado, recibirás un código. Revisa también tu carpeta de spam.');
+                        setResetStep(2);
+                        setResetCountdown(300);
+                      } finally {
+                        setResetLoading(false);
+                      }
+                    }}
+                    disabled={resetLoading}
+                    className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resetLoading ? 'Enviando...' : 'Enviar código'}
+                  </button>
+                </div>
+              )}
+
+              {/* ── Paso 2: Código ── */}
+              {resetStep === 2 && (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500">
+                    Ingresa el código de 6 caracteres que recibiste en tu correo.
+                  </p>
+                  {resetCountdown > 0 && (
+                    <p className="text-xs text-amber-600 font-medium">
+                      ⏱ El código expira en {Math.floor(resetCountdown / 60)}:{String(resetCountdown % 60).padStart(2, '0')}
+                    </p>
+                  )}
+                  {resetCountdown <= 0 && (
+                    <p className="text-xs text-red-600 font-medium">
+                      ⚠ El código ha expirado. Solicita uno nuevo.
+                    </p>
+                  )}
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="ABC123"
+                    value={resetCode}
+                    onChange={e => setResetCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                    className="block w-full text-center text-2xl font-mono tracking-[0.5em] py-4 border-2 border-dashed border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-indigo-50/50 transition-all"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (resetCode.length !== 6) {
+                        setResetMessage('El código debe tener exactamente 6 caracteres.');
+                        return;
+                      }
+                      setResetLoading(true);
+                      setResetMessage('');
+                      try {
+                        const res = await axios.post('/auth/verify-reset-code', { email: resetEmail, code: resetCode });
+                        if (res.data.success) {
+                          setResetMessage(res.data.message);
+                          setResetStep(3);
+                        } else {
+                          setResetMessage(res.data.message || 'Código incorrecto.');
+                        }
+                      } catch (err: any) {
+                        setResetMessage(err.response?.data?.message || 'Código incorrecto o expirado.');
+                      } finally {
+                        setResetLoading(false);
+                      }
+                    }}
+                    disabled={resetLoading || resetCode.length !== 6}
+                    className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resetLoading ? 'Verificando...' : 'Verificar código'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setResetStep(1); setResetCode(''); setResetMessage(''); }}
+                    className="w-full py-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors flex items-center justify-center gap-1"
+                  >
+                    <ArrowLeft size={14} /> Volver a ingresar correo
+                  </button>
+                </div>
+              )}
+
+              {/* ── Paso 3: Nueva contraseña ── */}
+              {resetStep === 3 && (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500">
+                    Ingresa tu nueva contraseña.
+                  </p>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="Nueva contraseña (mín. 6 caracteres)"
+                      value={resetNewPassword}
+                      onChange={e => setResetNewPassword(e.target.value)}
+                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="Confirmar contraseña"
+                      value={resetConfirmPassword}
+                      onChange={e => setResetConfirmPassword(e.target.value)}
+                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+                  {resetNewPassword.length > 0 && resetNewPassword.length < 6 && (
+                    <p className="text-xs text-amber-600">La contraseña debe tener al menos 6 caracteres.</p>
+                  )}
+                  {resetConfirmPassword.length > 0 && resetNewPassword !== resetConfirmPassword && (
+                    <p className="text-xs text-red-600">Las contraseñas no coinciden.</p>
+                  )}
+                  <button
+                    onClick={async () => {
+                      if (resetNewPassword.length < 6) {
+                        setResetMessage('La contraseña debe tener al menos 6 caracteres.');
+                        return;
+                      }
+                      if (resetNewPassword !== resetConfirmPassword) {
+                        setResetMessage('Las contraseñas no coinciden.');
+                        return;
+                      }
+                      setResetLoading(true);
+                      setResetMessage('');
+                      try {
+                        const res = await axios.post('/auth/reset-password', {
+                          email: resetEmail,
+                          code: resetCode,
+                          newPassword: resetNewPassword,
+                        });
+                        if (res.data.success) {
+                          setShowResetModal(false);
+                          Swal.fire({
+                            icon: 'success',
+                            title: '¡Contraseña restablecida!',
+                            text: 'Ya puedes iniciar sesión con tu nueva contraseña.',
+                            confirmButtonColor: '#4f46e5',
+                          });
+                        } else {
+                          setResetMessage(res.data.message || 'Error al restablecer.');
+                        }
+                      } catch (err: any) {
+                        setResetMessage(err.response?.data?.message || 'Error al restablecer la contraseña.');
+                      } finally {
+                        setResetLoading(false);
+                      }
+                    }}
+                    disabled={resetLoading || resetNewPassword.length < 6 || resetNewPassword !== resetConfirmPassword}
+                    className="w-full py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resetLoading ? 'Guardando...' : 'Restablecer contraseña'}
+                  </button>
+                </div>
+              )}
+
+              {/* Botón cancelar */}
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                className="w-full mt-3 py-2 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Overlay de Carga 5s (Nueva solicitud) */}
       {

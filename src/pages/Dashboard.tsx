@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar as CalendarIcon, Clock, LogOut, Activity, User, Plus, ChevronLeft, ChevronRight, Search, FilterX } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useSessionGuard } from '../hooks/useSessionGuard';
+import { clearSession, getStoredUser } from '../utils/auth';
 
 // Interfaces
 interface Especialidad {
@@ -44,6 +46,7 @@ interface Turno {
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 const Dashboard: React.FC = () => {
+    useSessionGuard(); // Protege la ruta: chequeo en mount + timer de expiración
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -90,27 +93,19 @@ const Dashboard: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
+        // La redirección si no hay sesión la maneja useSessionGuard.
+        const user = getStoredUser<{ id_usuario?: number; nombre?: string; apellido?: string }>();
+        if (!user) return;
 
-        if (!token || !userStr) {
-            navigate('/login');
-            return;
+        setUserId(user.id_usuario ?? null);
+        setUserName(`${user.nombre ?? ''} ${user.apellido ?? ''}`.trim());
+
+        if (location.state?.initialHistory) {
+            mapAndSetTurnos(location.state.initialHistory);
+        } else {
+            fetchHistorial(user.id_usuario!);
         }
 
-        try {
-            const user = JSON.parse(userStr);
-            setUserId(user.id_usuario);
-            setUserName(`${user.nombre} ${user.apellido}`);
-
-            if (location.state?.initialHistory) {
-                mapAndSetTurnos(location.state.initialHistory);
-            } else {
-                fetchHistorial(user.id_usuario);
-            }
-        } catch (e) {
-            console.error("Error al leer usuario", e);
-        }
         fetchEspecialidades();
     }, [navigate, location.state]);
 
@@ -132,7 +127,7 @@ const Dashboard: React.FC = () => {
             hora: t.hora,
             medico: t.medico,
             especialidad: t.especialidad,
-            estado: (t.estado === 'activo' || t.estado === 'completado') ? t.estado : 'cancelado',
+            estado: t.estado || 'activo',
         }));
         setMisTurnos(turnosMapeados);
     };
@@ -203,7 +198,7 @@ const Dashboard: React.FC = () => {
         setDisponibilidad([]);
         try {
             const fechaStr = date.toISOString().split('T')[0];
-            const response = await axios.get(`/availability?fecha=${fechaStr}&especialidadId=${selectedEspecialidad}`);
+            const response = await axios.get(`/availability?fecha=${fechaStr}&especialidadId=${selectedEspecialidad}&pacienteId=${userId}`);
             if (response.data.success) {
                 const todos = response.data.data as MedicoAvailability[];
                 const filtrados = todos.filter(g => g.medico.id === selectedMedico);
@@ -368,9 +363,8 @@ const Dashboard: React.FC = () => {
 
                     <button
                         onClick={() => {
-                            localStorage.removeItem('token');
-                            localStorage.removeItem('user');
-                            navigate('/login');
+                            clearSession(); // Marca logout explícito y limpia localStorage
+                            navigate('/login', { replace: true });
                         }}
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                         title="Cerrar sesión"
@@ -401,9 +395,24 @@ const Dashboard: React.FC = () => {
                         {/* Quick Stats - Próxima Cita Detallada */}
                         <div className="grid grid-cols-1 gap-6">
                             {(() => {
+                                const parseDateTime = (fecha: string, hora: string) => {
+                                    const match = hora.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
+                                    if (!match) return new Date(fecha).getTime();
+
+                                    let h = parseInt(match[1]);
+                                    const m = parseInt(match[2]);
+                                    const period = (match[3] || '').toLowerCase();
+
+                                    if ((period.includes('p') || period.includes('pm')) && h < 12) h += 12;
+                                    if ((period.includes('a') || period.includes('am')) && h === 12) h = 0;
+
+                                    // Usamos un separador T para formar un string ISO-like compatible
+                                    return new Date(`${fecha}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`).getTime();
+                                };
+
                                 const proxima = [...misTurnos]
                                     .filter(t => t.estado === 'activo')
-                                    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())[0];
+                                    .sort((a, b) => parseDateTime(a.fecha, a.hora) - parseDateTime(b.fecha, b.hora))[0];
                                 return proxima ? (
                                     <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-top duration-700 relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
@@ -541,11 +550,23 @@ const Dashboard: React.FC = () => {
                                             if (weightA !== weightB) return weightA - weightB;
 
                                             // 2. Orden cronológico dentro del mismo estado
-                                            const dateA = new Date(`${a.fecha}T${a.hora.match(/\d+:\d+/)?.[0] || '00:00'}`).getTime();
-                                            const dateB = new Date(`${b.fecha}T${b.hora.match(/\d+:\d+/)?.[0] || '00:00'}`).getTime();
+                                            const parseDateTime = (fecha: string, hora: string) => {
+                                                const match = hora.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
+                                                if (!match) return new Date(fecha).getTime();
+                                                let h = parseInt(match[1]);
+                                                const m = parseInt(match[2]);
+                                                const period = (match[3] || '').toLowerCase();
+                                                if ((period.includes('p') || period.includes('pm')) && h < 12) h += 12;
+                                                if ((period.includes('a') || period.includes('am')) && h === 12) h = 0;
+                                                return new Date(`${fecha}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`).getTime();
+                                            };
 
-                                            if (a.estado === 'activo') return dateA - dateB; // Próximas: más cercanas primero
-                                            return dateB - dateA; // Pasadas/Canceladas: más recientes primero
+                                            const dateA = parseDateTime(a.fecha, a.hora);
+                                            const dateB = parseDateTime(b.fecha, b.hora);
+
+                                            // Activo: más cercanas primero. Completado/Otros: más recientes primero.
+                                            if (a.estado === 'activo') return dateA - dateB;
+                                            return dateB - dateA;
                                         });
 
                                         const totalItems = filtered.length;

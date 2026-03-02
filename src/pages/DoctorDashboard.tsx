@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Clock, LogOut, Activity, User, FileText, CheckCircle, XCircle, Calendar, CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useSessionGuard } from '../hooks/useSessionGuard';
+import { clearSession, getStoredUser } from '../utils/auth';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale';
@@ -26,6 +28,7 @@ interface HuecoLibre {
 }
 
 const DoctorDashboard: React.FC = () => {
+    useSessionGuard(); // Protege la ruta: chequeo en mount + timer de expiración
     const navigate = useNavigate();
     const [citas, setCitas] = useState<CitaMedica[]>([]);
     const [huecos, setHuecos] = useState<HuecoLibre[]>([]);
@@ -37,7 +40,7 @@ const DoctorDashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     // Estados para el médico y filtros
-    const [medicoInfo, setMedicoInfo] = useState({ nombre: 'Cargando...', especialidad: '' });
+    const [medicoInfo, setMedicoInfo] = useState({ nombre: 'Cargando...', especialidad: '', horariosLaborales: [] as any[] });
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     // Formato YYYY-MM-DD para filtrado
@@ -61,29 +64,22 @@ const DoctorDashboard: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
+        // La redirección si no hay sesión la maneja useSessionGuard.
+        const user = getStoredUser<{ id_medico?: number }>();
+        if (!user) return;
 
-        if (!token || !userStr) {
-            navigate('/login');
-            return;
+        let extractedIdMedico: number | undefined = undefined;
+        if (user.id_medico) {
+            setMedicoIdDB(user.id_medico);
+            extractedIdMedico = user.id_medico;
         }
-
-        try {
-            const user = JSON.parse(userStr);
-            if (user.id_medico) {
-                setMedicoIdDB(user.id_medico);
-            }
-            fetchAgenda();
-            fetchPacientes();
-        } catch (e) {
-            console.error("Error leyendo usuario", e);
-        }
+        fetchAgenda(extractedIdMedico);
+        fetchPacientes();
     }, [navigate]);
 
     const fetchPacientes = async () => {
         try {
-            const response = await axios.get('/users?roleId=2&limit=500');
+            const response = await axios.get('/users?roleId=3&limit=500'); // 3 is Paciente
             if (response.data.success) {
                 setPacientes(response.data.data.users);
             }
@@ -92,13 +88,18 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
-    const fetchAgenda = async () => {
+    const fetchAgenda = async (medicoIdToUse?: number) => {
         setLoading(true);
+        const targetMedicoId = medicoIdToUse || medicoIdDB;
+        const query = targetMedicoId ? `?medicoId=${targetMedicoId}` : '';
         try {
-            const response = await axios.get(`/turnos/agenda`);
+            const response = await axios.get(`/turnos/agenda${query}`);
             if (response.data.success) {
                 if (response.data.data.medico) {
-                    setMedicoInfo(response.data.data.medico);
+                    setMedicoInfo({
+                        ...response.data.data.medico,
+                        horariosLaborales: response.data.data.medico.horariosLaborales || []
+                    });
                     if (response.data.data.medico.id) {
                         setMedicoIdDB(response.data.data.medico.id);
                     }
@@ -114,28 +115,33 @@ const DoctorDashboard: React.FC = () => {
                 }));
                 setCitas(agenda);
 
-                // Mapear huecos libres
-                if (response.data.data.huecos) {
+                // Mapear huecos libres (Solo si la API los manda, sino dejamos los que tiene fetchDisponibilidad)
+                if (response.data.data.huecos && response.data.data.huecos.length > 0) {
                     const disponibles = response.data.data.huecos.map((h: any) => ({
                         id: h.id,
                         fecha: h.fecha,
                         hora: h.hora
                     }));
                     setHuecos(disponibles);
+                } else if (targetMedicoId) {
+                    // Si la agenda no manda huecos, forzamos la carga de disponibilidad para la fecha seleccionada
+                    fetchDisponibilidad(targetMedicoId);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error cargando agenda:", error);
-            showNotification('Error al cargar la agenda.', 'error');
+            const msg = error.response?.data?.message || 'No se pudo sincronizar la agenda. Revisa tu conexión e intenta de nuevo.';
+            showNotification(msg, 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchDisponibilidad = async () => {
-        if (!medicoIdDB) return;
+    const fetchDisponibilidad = async (medicoIdOverride?: number) => {
+        const idToUse = medicoIdOverride || medicoIdDB;
+        if (!idToUse) return;
         try {
-            const response = await axios.get(`/availability?fecha=${formattedSelectedDate}&medicoId=${medicoIdDB}`);
+            const response = await axios.get(`/availability?fecha=${formattedSelectedDate}&medicoId=${idToUse}`);
             if (response.data.success && response.data.data.length > 0) {
                 const disponibles = response.data.data[0].slots.map((h: any) => ({
                     id: h.id,
@@ -156,9 +162,8 @@ const DoctorDashboard: React.FC = () => {
     }, [medicoIdDB, formattedSelectedDate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
+        clearSession(); // Marca logout explícito y limpia localStorage
+        navigate('/login', { replace: true });
     };
 
     const agendarCita = async (idHorario: number, hora: string, fecha: string) => {
@@ -171,7 +176,12 @@ const DoctorDashboard: React.FC = () => {
             return;
         }
 
+        // Convertir el horario seleccionado a minutos UTC para comparar conflictos del paciente
+        const slotDate = new Date(idHorario);
+        const slotMinutes = slotDate.getUTCHours() * 60 + slotDate.getUTCMinutes();
+
         const result = await Swal.fire({
+
             title: 'Agendar Cita',
             html: `
                 <div class="mt-4 mb-2 text-left relative" id="paciente-select-wrapper">
@@ -184,8 +194,9 @@ const DoctorDashboard: React.FC = () => {
                         autocomplete="off"
                     >
                     <input type="hidden" id="paciente-selected-id">
-                    <div id="paciente-dropdown" class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto text-sm text-left">
-                    </div>
+                </div>
+                <div id="patient-conflict-warning" class="hidden mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold text-left">
+                    ⚠️ El paciente ya tiene una consulta agendada muy cercana a las ${hora}. Para respetar el tiempo de traslado entre consultorios, debe haber al menos 1 hora entre citas.
                 </div>
                 <div class="mt-5 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-4">
                     <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl shadow-inner shrink-0">
@@ -209,10 +220,64 @@ const DoctorDashboard: React.FC = () => {
                 htmlContainer: 'm-0 p-0 overflow-visible'
             },
             buttonsStyling: false,
+            willClose: () => {
+                const existingDropdown = document.getElementById('paciente-dropdown-fixed');
+                if (existingDropdown) existingDropdown.remove();
+            },
+
             didOpen: () => {
                 const searchInput = document.getElementById('paciente-search') as HTMLInputElement;
-                const dropdown = document.getElementById('paciente-dropdown') as HTMLDivElement;
                 const hiddenInput = document.getElementById('paciente-selected-id') as HTMLInputElement;
+                const conflictWarning = document.getElementById('patient-conflict-warning') as HTMLDivElement;
+                const confirmBtn = Swal.getConfirmButton();
+
+                // Crear el dropdown como elemento fixed en el body (flota sobre todo el modal)
+                const dropdown = document.createElement('div');
+                dropdown.id = 'paciente-dropdown-fixed';
+                dropdown.className = 'hidden bg-white border border-gray-100 rounded-xl shadow-2xl overflow-y-auto text-sm text-left';
+                dropdown.style.cssText = 'position:fixed; z-index:99999; max-height:220px; min-width:300px;';
+                document.body.appendChild(dropdown);
+
+                const positionDropdown = () => {
+                    const rect = searchInput.getBoundingClientRect();
+                    dropdown.style.top = `${rect.bottom + 6}px`;
+                    dropdown.style.left = `${rect.left}px`;
+                    dropdown.style.width = `${rect.width}px`;
+                };
+
+                const showDropdown = () => {
+                    positionDropdown();
+                    dropdown.classList.remove('hidden');
+                };
+                const hideDropdown = () => dropdown.classList.add('hidden');
+
+                // Deshabilitar confirmar hasta que se seleccione un paciente válido
+                if (confirmBtn) confirmBtn.setAttribute('disabled', 'true');
+
+                // Verifica si el paciente tiene citas en conflicto para esa fecha y horario
+                const checkPatientConflict = async (pacienteId: number): Promise<boolean> => {
+                    try {
+                        const res = await fetch(`/api/v1/appointments?pacienteId=${pacienteId}`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        const data = await res.json();
+                        if (!data.success) return false;
+
+                        const citasDelDia = (data.data as any[]).filter(c => c.fecha === fecha && c.estado === 'activo');
+                        return citasDelDia.some(c => {
+                            const match = c.hora.match(/(\d+):(\d+)/);
+                            if (!match) return false;
+                            let h = parseInt(match[1], 10);
+                            const m = parseInt(match[2], 10);
+                            if (c.hora.toLowerCase().includes('p') && h !== 12) h += 12;
+                            if (c.hora.toLowerCase().includes('a') && h === 12) h = 0;
+                            const citaMinutes = h * 60 + m;
+                            return Math.abs(citaMinutes - slotMinutes) < 60;
+                        });
+                    } catch {
+                        return false;
+                    }
+                };
 
                 const renderOptions = (filterText: string) => {
                     dropdown.innerHTML = '';
@@ -236,10 +301,29 @@ const DoctorDashboard: React.FC = () => {
                             div.appendChild(nameSpan);
                             if (p.email) div.appendChild(emailSpan);
 
-                            div.onclick = () => {
+                            div.onclick = async () => {
                                 searchInput.value = `${p.nombre} ${p.apellido}`;
                                 hiddenInput.value = p.id.toString();
                                 dropdown.classList.add('hidden');
+                                conflictWarning.classList.add('hidden');
+                                if (confirmBtn) confirmBtn.setAttribute('disabled', 'true');
+
+                                const hasConflict = await checkPatientConflict(p.id);
+                                if (hasConflict) {
+                                    conflictWarning.classList.remove('hidden');
+                                    if (confirmBtn) {
+                                        confirmBtn.setAttribute('disabled', 'true');
+                                        confirmBtn.style.opacity = '0.4';
+                                        confirmBtn.style.cursor = 'not-allowed';
+                                    }
+                                } else {
+                                    conflictWarning.classList.add('hidden');
+                                    if (confirmBtn) {
+                                        confirmBtn.removeAttribute('disabled');
+                                        confirmBtn.style.opacity = '';
+                                        confirmBtn.style.cursor = '';
+                                    }
+                                }
                             };
                             dropdown.appendChild(div);
                         });
@@ -247,20 +331,26 @@ const DoctorDashboard: React.FC = () => {
                 };
 
                 searchInput.addEventListener('input', (e) => {
-                    dropdown.classList.remove('hidden');
+                    showDropdown();
                     renderOptions((e.target as HTMLInputElement).value);
-                    hiddenInput.value = ''; // Reset selected ID on manual edit
+                    hiddenInput.value = '';
+                    conflictWarning.classList.add('hidden');
+                    if (confirmBtn) {
+                        confirmBtn.setAttribute('disabled', 'true');
+                        confirmBtn.style.opacity = '';
+                        confirmBtn.style.cursor = '';
+                    }
                 });
 
                 searchInput.addEventListener('focus', () => {
-                    dropdown.classList.remove('hidden');
+                    showDropdown();
                     renderOptions(searchInput.value);
                 });
 
                 document.addEventListener('click', (e) => {
                     const wrapper = document.getElementById('paciente-select-wrapper');
-                    if (wrapper && !wrapper.contains(e.target as Node)) {
-                        dropdown.classList.add('hidden');
+                    if (wrapper && !wrapper.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+                        hideDropdown();
                     }
                 });
             },
@@ -345,6 +435,37 @@ const DoctorDashboard: React.FC = () => {
         } catch (error) {
             console.error("Error completando cita:", error);
             showNotification('Error al completar la cita.', 'error');
+        }
+    };
+
+    const cancelarCita = async (cita: CitaMedica) => {
+        const result = await Swal.fire({
+            title: '¿Cancelar cita?',
+            text: `¿Seguro que deseas cancelar la cita de ${cita.paciente}? Esta acción liberará el horario.`,
+            icon: 'warning',
+            buttonsStyling: false,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar cita',
+            cancelButtonText: 'No, mantener',
+            customClass: {
+                confirmButton: 'px-6 py-3 bg-red-600 text-white rounded-xl font-bold mx-2',
+                cancelButton: 'px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold mx-2'
+            }
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await axios.patch(`/turnos/${cita.id}/cancel`);
+            if (response.data.success) {
+                setCitas(citas.map(c => c.id === cita.id ? { ...c, estado: 'cancelado' } : c));
+                showNotification('Cita cancelada con éxito', 'success');
+                fetchAgenda();
+                fetchDisponibilidad();
+            }
+        } catch (error) {
+            console.error("Error al cancelar cita:", error);
+            showNotification('Error al cancelar la cita.', 'error');
         }
     };
 
@@ -449,6 +570,11 @@ const DoctorDashboard: React.FC = () => {
                                 dateFormat="dd/MM/yyyy"
                                 locale={es}
                                 minDate={new Date()}
+                                filterDate={(date) => {
+                                    if (medicoInfo.horariosLaborales.length === 0) return false;
+                                    const day = date.getDay();
+                                    return medicoInfo.horariosLaborales.some(h => h.diaSemana === day);
+                                }}
                                 className="block w-full md:w-auto pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none cursor-pointer hover:bg-white selection:bg-emerald-500"
                             />
                         </div>
@@ -459,8 +585,7 @@ const DoctorDashboard: React.FC = () => {
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 className="font-semibold text-gray-700">Pacientes Programados</h3>
                             <button className="text-emerald-600 text-sm font-medium hover:underline" onClick={() => {
-                                fetchAgenda();
-                                fetchDisponibilidad();
+                                fetchAgenda().then(() => fetchDisponibilidad());
                             }}>Actualizar</button>
                         </div>
 
@@ -512,11 +637,18 @@ const DoctorDashboard: React.FC = () => {
                                                     {cita.estado === 'activo' && (
                                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                                             <button
-                                                                onClick={() => marcarInasistencia(cita)}
-                                                                className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-black hover:bg-red-100 transition-all active:scale-95 flex items-center justify-center border border-red-100"
-                                                                title="No asistio"
+                                                                onClick={() => cancelarCita(cita)}
+                                                                className="px-4 py-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-black hover:bg-orange-100 transition-all active:scale-95 flex items-center justify-center border border-orange-100"
+                                                                title="Cancelar Cita"
                                                             >
                                                                 <CalendarX2 size={20} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => marcarInasistencia(cita)}
+                                                                className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-black hover:bg-red-100 transition-all active:scale-95 flex items-center justify-center border border-red-100"
+                                                                title="No asistió"
+                                                            >
+                                                                <User size={20} />
                                                             </button>
                                                             <button
                                                                 onClick={() => completarCita(cita)}
@@ -565,7 +697,9 @@ const DoctorDashboard: React.FC = () => {
                             <Activity size={120} />
                         </div>
                         <h3 className="font-black text-emerald-100 mb-1 text-sm uppercase tracking-widest flex items-center gap-2"><Calendar size={14} /> Estadísticas de hoy</h3>
-                        <div className="text-6xl font-black mb-6 tracking-tighter">{citas.filter(c => c.fecha === formattedSelectedDate).length}</div>
+                        <div className="text-6xl font-black mb-6 tracking-tighter">
+                            {citas.filter(c => c.fecha === formattedSelectedDate && c.estado !== 'cancelado').length}
+                        </div>
                         <div className="flex flex-col gap-2 text-sm font-bold">
                             <span className="bg-white/20 px-3 py-2 rounded-xl flex justify-between items-center backdrop-blur-sm">
                                 <span>✅ Atendidos</span>
@@ -574,6 +708,10 @@ const DoctorDashboard: React.FC = () => {
                             <span className="bg-black/20 px-3 py-2 rounded-xl flex justify-between items-center backdrop-blur-sm">
                                 <span>⏳ Pendientes</span>
                                 <span>{citas.filter(c => c.fecha === formattedSelectedDate && c.estado === 'activo').length}</span>
+                            </span>
+                            <span className="bg-orange-400/30 px-3 py-2 rounded-xl flex justify-between items-center backdrop-blur-sm">
+                                <span>🚫 Inasistencias</span>
+                                <span>{citas.filter(c => c.fecha === formattedSelectedDate && c.estado === 'no_asistio').length}</span>
                             </span>
                         </div>
                     </div>
