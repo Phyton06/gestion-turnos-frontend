@@ -809,14 +809,14 @@ const Dashboard: React.FC = () => {
                                                 // Checar si es hora pasada (si es hoy)
                                                 let isPastTime = false;
                                                 if (isToday) {
-                                                    const timeMatch = slot.horaInicio.match(/(\d+):(\d+)(?:\s*(am|pm))?/i);
+                                                    const timeMatch = slot.horaInicio.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
                                                     if (timeMatch) {
                                                         let h = parseInt(timeMatch[1]);
                                                         const m = parseInt(timeMatch[2]);
-                                                        const ampm = timeMatch[3]?.toLowerCase();
+                                                        const period = (timeMatch[3] || '').toLowerCase();
 
-                                                        if (ampm === 'pm' && h < 12) h += 12;
-                                                        if (ampm === 'am' && h === 12) h = 0;
+                                                        if ((period.includes('p') || period.includes('pm')) && h < 12) h += 12;
+                                                        if ((period.includes('a') || period.includes('am')) && h === 12) h = 0;
 
                                                         const slotTime = new Date(now);
                                                         slotTime.setHours(h, m, 0, 0);
@@ -829,17 +829,21 @@ const Dashboard: React.FC = () => {
                                                     if (t.fecha !== slotDateStr || t.estado !== 'activo') return false;
 
                                                     // Parse t.hora (puede venir de toLocaleTimeString es-AR)
-                                                    const tMatch = t.hora.match(/(\d+):(\d+)/);
-                                                    const sMatch = slot.horaInicio.match(/(\d+):(\d+)(?:\s*(am|pm))?/i);
+                                                    const tMatch = t.hora.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
+                                                    const sMatch = slot.horaInicio.match(/(\d+):(\d+)(?:\s*(am|pm|p\.\s*m\.|a\.\s*m\.))?/i);
 
                                                     if (!tMatch || !sMatch) return false;
 
                                                     let [tH, tM] = [parseInt(tMatch[1]), parseInt(tMatch[2])];
                                                     let [sH, sM] = [parseInt(sMatch[1]), parseInt(sMatch[2])];
-                                                    const sampm = sMatch[3]?.toLowerCase();
+                                                    const tampm = (tMatch[3] || '').toLowerCase();
+                                                    const sampm = (sMatch[3] || '').toLowerCase();
 
-                                                    if (sampm === 'pm' && sH < 12) sH += 12;
-                                                    if (sampm === 'am' && sH === 12) sH = 0;
+                                                    if ((tampm.includes('p') || tampm.includes('pm')) && tH < 12) tH += 12;
+                                                    if ((tampm.includes('a') || tampm.includes('am')) && tH === 12) tH = 0;
+
+                                                    if ((sampm.includes('p') || sampm.includes('pm')) && sH < 12) sH += 12;
+                                                    if ((sampm.includes('a') || sampm.includes('am')) && sH === 12) sH = 0;
 
                                                     const tTotal = tH * 60 + tM;
                                                     const sTotal = sH * 60 + sM;
