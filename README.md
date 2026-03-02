@@ -3,6 +3,16 @@
 ## Descripción y Estado
 Aplicación cliente para la gestión de turnos médicos, diseñada para ofrecer una interfaz clara y eficiente a pacientes, médicos y administradores. Esta versión v1.0.0 representa la primera versión estable de la interfaz de usuario, completamente integrada con los servicios de la API backend.
 
+**Acceso Demo:** [https://gestion-turnos-frontend.vercel.app/](https://gestion-turnos-frontend.vercel.app/)
+
+Agradezco cualquier feedback técnico o funcional para continuar mejorando el sistema.
+
+## Acceso de Prueba
+Para explorar las funcionalidades de cada rol, puede utilizar las siguientes credenciales (Contraseña: `123456` para todas):
+- **Administrador:** `admin@test.com`
+- **Médico:** `medico@test.com`
+- **Paciente:** `paciente@test.com`
+
 ## Características de la v1
 - Dashboards diferenciados con vistas específicas para los roles de Paciente, Médico y Administrador.
 - Sistema de protección de rutas y monitoreo de sesión activa con alertas de expiración automática.
