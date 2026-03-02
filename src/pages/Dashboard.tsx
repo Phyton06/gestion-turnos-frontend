@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
             hora: t.hora,
             medico: t.medico,
             especialidad: t.especialidad,
-            estado: (t.estado === 'activo' || t.estado === 'completado') ? t.estado : 'cancelado',
+            estado: t.estado || 'activo',
         }));
         setMisTurnos(turnosMapeados);
     };
@@ -203,7 +203,7 @@ const Dashboard: React.FC = () => {
         setDisponibilidad([]);
         try {
             const fechaStr = date.toISOString().split('T')[0];
-            const response = await axios.get(`/availability?fecha=${fechaStr}&especialidadId=${selectedEspecialidad}`);
+            const response = await axios.get(`/availability?fecha=${fechaStr}&especialidadId=${selectedEspecialidad}&pacienteId=${userId}`);
             if (response.data.success) {
                 const todos = response.data.data as MedicoAvailability[];
                 const filtrados = todos.filter(g => g.medico.id === selectedMedico);

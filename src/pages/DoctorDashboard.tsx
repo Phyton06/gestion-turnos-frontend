@@ -360,6 +360,37 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
+    const cancelarCita = async (cita: CitaMedica) => {
+        const result = await Swal.fire({
+            title: '¿Cancelar cita?',
+            text: `¿Seguro que deseas cancelar la cita de ${cita.paciente}? Esta acción liberará el horario.`,
+            icon: 'warning',
+            buttonsStyling: false,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar cita',
+            cancelButtonText: 'No, mantener',
+            customClass: {
+                confirmButton: 'px-6 py-3 bg-red-600 text-white rounded-xl font-bold mx-2',
+                cancelButton: 'px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold mx-2'
+            }
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await axios.patch(`/turnos/${cita.id}/cancel`);
+            if (response.data.success) {
+                setCitas(citas.map(c => c.id === cita.id ? { ...c, estado: 'cancelado' } : c));
+                showNotification('Cita cancelada con éxito', 'success');
+                fetchAgenda();
+                fetchDisponibilidad();
+            }
+        } catch (error) {
+            console.error("Error al cancelar cita:", error);
+            showNotification('Error al cancelar la cita.', 'error');
+        }
+    };
+
     const marcarInasistencia = async (cita: CitaMedica) => {
         const result = await Swal.fire({
             title: '¿Marcar inasistencia?',
@@ -528,11 +559,18 @@ const DoctorDashboard: React.FC = () => {
                                                     {cita.estado === 'activo' && (
                                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                                             <button
-                                                                onClick={() => marcarInasistencia(cita)}
-                                                                className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-black hover:bg-red-100 transition-all active:scale-95 flex items-center justify-center border border-red-100"
-                                                                title="No asistio"
+                                                                onClick={() => cancelarCita(cita)}
+                                                                className="px-4 py-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-black hover:bg-orange-100 transition-all active:scale-95 flex items-center justify-center border border-orange-100"
+                                                                title="Cancelar Cita"
                                                             >
                                                                 <CalendarX2 size={20} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => marcarInasistencia(cita)}
+                                                                className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-black hover:bg-red-100 transition-all active:scale-95 flex items-center justify-center border border-red-100"
+                                                                title="No asistió"
+                                                            >
+                                                                <User size={20} />
                                                             </button>
                                                             <button
                                                                 onClick={() => completarCita(cita)}
