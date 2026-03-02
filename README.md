@@ -16,6 +16,7 @@ Aplicación cliente para la gestión de turnos médicos, diseñada para ofrecer 
 - Axios: Cliente HTTP para la comunicación persistente con la API del servidor.
 - Lucide React: Librería de iconos vectoriales para elementos de navegación y UI.
 - Tailwind CSS: Framework de utilidad para la implementación del diseño visual y responsividad.
+- Vercel: Plataforma de despliegue y hosting para la aplicación frontend.
 
 ## Requisitos Previos
 - Node.js (v18.0.0 o superior) o Bun.
@@ -34,7 +35,7 @@ Aplicación cliente para la gestión de turnos médicos, diseñada para ofrecer 
    bun install
    ```
 3. Configuración de API:
-   Asegúrese de establecer la dirección del backend en la configuración del cliente (archivo de configuración de Axios o variables de entorno).
+   Configurar la variable de entorno `VITE_API_BASE_URL` apuntando a la instancia de producción en Render o a la dirección local.
 4. Iniciar la aplicación:
    ```bash
    npm run dev
@@ -43,10 +44,10 @@ Aplicación cliente para la gestión de turnos médicos, diseñada para ofrecer 
    ```
 
 ## Uso
-El cliente queda disponible en `http://localhost:5173`. El acceso a los distintos módulos depende estrictamente del rol asignado al usuario durante el inicio de sesión. La aplicación gestiona automáticamente la limpieza de estados locales tras la expiración de la sesión.
+La aplicación se encuentra desplegada y disponible para su uso en producción. El acceso a los distintos módulos depende estrictamente del rol asignado al usuario durante el inicio de sesión. La aplicación gestiona automáticamente la limpieza de estados locales tras la expiración de la sesión.
 
 ## Contacto
-- Desarrollador: Luis Angel Cardona Becrra
-- Rol: Software Engineer Senior
+- Desarrollador: Luis Angel Cardona Becerra
+- Rol: Software Engineer Jr
 - GitHub: [Phyton06](https://github.com/Phyton06)
-- LinkedIn: [https://www.linkedin.com/in/luis-angel-cardona-becerra/](https://www.linkedin.com/in/luis-angel-cardona-becerra/)
+- LinkedIn: [https://www.linkedin.com/in/luis-angel-cardona-becerra-5b5b1718b/](https://www.linkedin.com/in/luis-angel-cardona-becerra-5b5b1718b/)
