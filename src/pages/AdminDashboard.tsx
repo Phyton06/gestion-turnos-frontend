@@ -504,37 +504,41 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Navbar Admin (Premium) */}
-            <nav className="bg-white shadow-md shadow-indigo-900/5 px-8 py-5 flex justify-between items-center relative z-10">
-                <div className="flex items-center gap-4 border-l-4 border-indigo-500 pl-4">
-                    <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600 shadow-inner">
-                        <Shield size={32} />
+            {/* Navbar Admin - Responsive */}
+            <nav className="bg-white shadow-md shadow-indigo-900/5 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-2 sm:gap-4 border-l-4 border-indigo-500 pl-3 sm:pl-4">
+                    <div className="bg-indigo-50 p-2 sm:p-3 rounded-2xl text-indigo-600 shadow-inner">
+                        <Shield size={22} className="sm:hidden" />
+                        <Shield size={32} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">
-                            Panel de Administración
+                        <h1 className="text-base sm:text-2xl font-black text-gray-900 tracking-tight leading-none mb-0.5">
+                            <span className="hidden sm:inline">Panel de Administración</span>
+                            <span className="sm:hidden">Admin Panel</span>
                         </h1>
-                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">
+                        <p className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-widest hidden sm:block">
                             Gestión de Turnos v1.0 | <span className="text-indigo-600">{adminName}</span>
                         </p>
+                        <p className="text-xs font-bold text-indigo-600 sm:hidden">{adminName}</p>
                     </div>
                 </div>
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-sm font-bold border border-gray-100 shadow-sm active:scale-95"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-xs sm:text-sm font-bold border border-gray-100 shadow-sm active:scale-95"
                 >
-                    <LogOut size={18} />
-                    Cerrar Sesión
+                    <LogOut size={16} />
+                    <span className="hidden sm:inline">Cerrar Sesión</span>
+                    <span className="sm:hidden">Salir</span>
                 </button>
             </nav>
 
-            <div className="flex-1 container mx-auto p-6 max-w-7xl">
+            <div className="flex-1 container mx-auto p-3 sm:p-6 max-w-7xl">
 
                 {/* Header y Acciones */}
-                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-8">
                     <div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tight">Gestión de Usuarios</h2>
-                        <p className="text-gray-500 font-medium mt-1">Administra pacientes, médicos y permisos del sistema.</p>
+                        <h2 className="text-xl sm:text-3xl font-black text-gray-900 tracking-tight">Gestión de Usuarios</h2>
+                        <p className="text-gray-500 font-medium mt-1 text-sm sm:text-base">Administra pacientes, médicos y permisos del sistema.</p>
                     </div>
                     <button
                         onClick={() => {
@@ -544,7 +548,7 @@ const AdminDashboard: React.FC = () => {
                                 setShowCreateForm(true);
                             }
                         }}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl transition-all shadow-sm font-bold active:scale-95
+                        className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl transition-all shadow-sm font-bold active:scale-95
                     ${showCreateForm
                                 ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                                 : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200 hover:shadow-indigo-300 shadow-md border-none'
@@ -812,9 +816,9 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 {/* Tabla de Usuarios */}
-                <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 overflow-hidden mb-8">
+                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-200 overflow-hidden mb-4 sm:mb-8">
                     {/* Barra de búsqueda y Filtros */}
-                    <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                    <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50">
                         <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center">
                             <div className="relative flex-1 w-full">
                                 <Search size={18} className="text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -860,7 +864,7 @@ const AdminDashboard: React.FC = () => {
                                 </div>
 
                                 <select
-                                    className="py-2.5 px-3 text-sm bg-white border border-gray-200 rounded-lg outline-none shadow-sm cursor-pointer"
+                                    className="py-2.5 px-3 text-sm bg-white border border-gray-200 rounded-lg outline-none shadow-sm cursor-pointer w-full sm:w-auto"
                                     value={filterEstado}
                                     onChange={(e) => setFilterEstado(e.target.value)}
                                 >
@@ -897,92 +901,140 @@ const AdminDashboard: React.FC = () => {
                             <p>No se encontraron usuarios con ese criterio.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-50 text-xs uppercase text-gray-500 font-bold tracking-wider">
-                                        <th className="p-5 border-b border-gray-100">Usuario</th>
-                                        <th className="p-5 border-b border-gray-100">Rol</th>
-                                        <th className="p-5 border-b border-gray-100">Estado</th>
-                                        <th className="p-5 border-b border-gray-100">Registro</th>
-                                        <th className="p-5 border-b border-gray-100 text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {paginatedUsers.map(user => (
-                                        <tr key={user.id} className="hover:bg-indigo-50/30 transition-colors group">
-                                            <td className="p-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm
-                                                ${user.idRol === 1 ? 'bg-purple-600' :
-                                                            user.idRol === 2 ? 'bg-blue-500' : 'bg-emerald-500'}
-                                            `}>
-                                                        {user.nombre ? user.nombre.charAt(0) : 'U'}
-                                                        {user.apellido ? user.apellido.charAt(0) : ''}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-semibold text-gray-900">{user.nombre} {user.apellido}</div>
-                                                        <div className="text-sm text-gray-500">{user.email}</div>
-                                                    </div>
+                        <div>
+                            {/* Vista Tarjetas para Mobile */}
+                            <div className="sm:hidden divide-y divide-gray-100">
+                                {paginatedUsers.map(user => (
+                                    <div key={user.id} className="p-4 hover:bg-indigo-50/20 transition-colors">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0
+                                                    ${user.idRol === 1 ? 'bg-purple-600' : user.idRol === 2 ? 'bg-blue-500' : 'bg-emerald-500'}`}>
+                                                    {user.nombre?.charAt(0)}{user.apellido?.charAt(0)}
                                                 </div>
-                                            </td>
-                                            <td className="p-5">
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border
-                                            ${user.idRol === 1 ? 'bg-purple-50 text-purple-700 border-purple-100' :
-                                                        user.idRol === 2 ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}
-                                        `}>
-                                                    {user.rol}
-                                                </span>
-                                            </td>
-                                            <td className="p-5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`w-2.5 h-2.5 rounded-full ${user.estado ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                    <span className={`text-sm font-medium ${user.estado ? 'text-gray-700' : 'text-gray-500'}`}>
-                                                        {user.estado ? 'Activo' : 'Inactivo'}
-                                                    </span>
+                                                <div>
+                                                    <div className="font-semibold text-gray-900 text-sm">{user.nombre} {user.apellido}</div>
+                                                    <div className="text-xs text-gray-500 truncate max-w-[180px]">{user.email}</div>
                                                 </div>
-                                            </td>
-                                            <td className="p-5 text-sm text-gray-500">
-                                                {user.fechaRegistro ? new Date(user.fechaRegistro).toLocaleDateString('es-ES', {
-                                                    day: '2-digit', month: 'short', year: 'numeric'
-                                                }) : '-'}
-                                            </td>
-                                            <td className="p-5 text-right">
-                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {/* Botón de Toggle Status */}
-                                                    <button
-                                                        onClick={() => handleToggleStatus(user.id, user.estado)}
-                                                        className={`p-2 rounded-lg transition-all border ${user.estado
-                                                            ? 'text-amber-600 border-amber-200 hover:bg-amber-50'
-                                                            : 'text-green-600 border-green-200 hover:bg-green-50'
-                                                            }`}
-                                                        title={user.estado ? "Desactivar cuenta" : "Activar cuenta"}
-                                                    >
-                                                        {user.estado ? <AlertTriangle size={18} /> : <CheckCircle size={18} />}
-                                                    </button>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <button
+                                                    onClick={() => handleToggleStatus(user.id, user.estado)}
+                                                    className={`p-1.5 rounded-lg border ${user.estado ? 'text-amber-600 border-amber-200 bg-amber-50' : 'text-green-600 border-green-200 bg-green-50'
+                                                        }`}
+                                                    title={user.estado ? 'Desactivar' : 'Activar'}
+                                                >
+                                                    {user.estado ? <AlertTriangle size={15} /> : <CheckCircle size={15} />}
+                                                </button>
+                                                <button
+                                                    onClick={() => { openEditForm(user); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                                    className="p-1.5 rounded-lg text-blue-600 border border-blue-200 bg-blue-50"
+                                                    title="Editar"
+                                                >
+                                                    <Pencil size={15} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${user.idRol === 1 ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                user.idRol === 2 ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                }`}>{user.rol}</span>
+                                            <span className="flex items-center gap-1 text-xs text-gray-500">
+                                                <span className={`w-2 h-2 rounded-full ${user.estado ? 'bg-green-500' : 'bg-red-400'}`}></span>
+                                                {user.estado ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
 
-                                                    {/* Botón de Editar */}
-                                                    <button
-                                                        onClick={() => {
-                                                            openEditForm(user);
-                                                            // Scroll top to see the form
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }}
-                                                        className="p-2 rounded-lg text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all"
-                                                        title="Editar usuario"
-                                                    >
-                                                        <Pencil size={18} />
-                                                    </button>
-                                                </div>
-                                            </td>
+                            {/* Vista Tabla para Desktop */}
+                            <div className="hidden sm:block overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-gray-50 text-xs uppercase text-gray-500 font-bold tracking-wider">
+                                            <th className="p-5 border-b border-gray-100">Usuario</th>
+                                            <th className="p-5 border-b border-gray-100">Rol</th>
+                                            <th className="p-5 border-b border-gray-100">Estado</th>
+                                            <th className="p-5 border-b border-gray-100">Registro</th>
+                                            <th className="p-5 border-b border-gray-100 text-right">Acciones</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {paginatedUsers.map(user => (
+                                            <tr key={user.id} className="hover:bg-indigo-50/30 transition-colors group">
+                                                <td className="p-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm
+                                                ${user.idRol === 1 ? 'bg-purple-600' :
+                                                                user.idRol === 2 ? 'bg-blue-500' : 'bg-emerald-500'}
+                                            `}>
+                                                            {user.nombre ? user.nombre.charAt(0) : 'U'}
+                                                            {user.apellido ? user.apellido.charAt(0) : ''}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-semibold text-gray-900">{user.nombre} {user.apellido}</div>
+                                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5">
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border
+                                            ${user.idRol === 1 ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                            user.idRol === 2 ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}
+                                        `}>
+                                                        {user.rol}
+                                                    </span>
+                                                </td>
+                                                <td className="p-5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`w-2.5 h-2.5 rounded-full ${user.estado ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                        <span className={`text-sm font-medium ${user.estado ? 'text-gray-700' : 'text-gray-500'}`}>
+                                                            {user.estado ? 'Activo' : 'Inactivo'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-sm text-gray-500">
+                                                    {user.fechaRegistro ? new Date(user.fechaRegistro).toLocaleDateString('es-ES', {
+                                                        day: '2-digit', month: 'short', year: 'numeric'
+                                                    }) : '-'}
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {/* Botón de Toggle Status */}
+                                                        <button
+                                                            onClick={() => handleToggleStatus(user.id, user.estado)}
+                                                            className={`p-2 rounded-lg transition-all border ${user.estado
+                                                                ? 'text-amber-600 border-amber-200 hover:bg-amber-50'
+                                                                : 'text-green-600 border-green-200 hover:bg-green-50'
+                                                                }`}
+                                                            title={user.estado ? "Desactivar cuenta" : "Activar cuenta"}
+                                                        >
+                                                            {user.estado ? <AlertTriangle size={18} /> : <CheckCircle size={18} />}
+                                                        </button>
+
+                                                        {/* Botón de Editar */}
+                                                        <button
+                                                            onClick={() => {
+                                                                openEditForm(user);
+                                                                // Scroll top to see the form
+                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                            }}
+                                                            className="p-2 rounded-lg text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all"
+                                                            title="Editar usuario"
+                                                        >
+                                                            <Pencil size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>{/* end desktop table */}
 
                             {/* Barra de paginación siempre visible */}
                             <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/30">
-                                {/* Selector de filas por página — dropdown con position:fixed */}
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <span>Mostrar</span>
                                     <div className="relative">
@@ -1004,7 +1056,6 @@ const AdminDashboard: React.FC = () => {
 
                                         {perPageOpen && (
                                             <>
-                                                {/* Capa invisible para cerrar al hacer clic fuera */}
                                                 <div className="fixed inset-0 z-[99990]" onClick={() => setPerPageOpen(false)} />
                                                 <div
                                                     style={{
@@ -1021,10 +1072,7 @@ const AdminDashboard: React.FC = () => {
                                                             key={n}
                                                             type="button"
                                                             onClick={() => { setItemsPerPage(n); setPerPageOpen(false); }}
-                                                            className={`w-full px-4 py-2 text-xs text-left font-medium transition-colors hover:bg-indigo-50 ${itemsPerPage === n
-                                                                ? 'bg-indigo-50 text-indigo-700 font-bold'
-                                                                : 'text-gray-700'
-                                                                }`}
+                                                            className={`w-full px-4 py-2 text-xs text-left font-medium transition-colors hover:bg-indigo-50 ${itemsPerPage === n ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-700'}`}
                                                         >
                                                             {n}
                                                         </button>
@@ -1036,7 +1084,6 @@ const AdminDashboard: React.FC = () => {
                                     <span>por página</span>
                                 </div>
 
-                                {/* Info de página + botones de navegación */}
                                 {totalPages > 1 && (
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm text-gray-500">
@@ -1049,23 +1096,15 @@ const AdminDashboard: React.FC = () => {
                                         >
                                             <ChevronLeft size={18} />
                                         </button>
-
                                         <div className="flex items-center gap-1">
                                             {Array.from({ length: totalPages }).map((_, i) => {
                                                 const page = i + 1;
-                                                if (
-                                                    page === 1 ||
-                                                    page === totalPages ||
-                                                    (page >= currentPage - 1 && page <= currentPage + 1)
-                                                ) {
+                                                if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
                                                     return (
                                                         <button
                                                             key={page}
                                                             onClick={() => setCurrentPage(page)}
-                                                            className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${currentPage === page
-                                                                ? 'bg-indigo-600 text-white shadow-sm'
-                                                                : 'text-gray-600 border border-transparent hover:border-gray-200 hover:bg-white'
-                                                                }`}
+                                                            className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${currentPage === page ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 border border-transparent hover:border-gray-200 hover:bg-white'}`}
                                                         >
                                                             {page}
                                                         </button>
@@ -1077,7 +1116,6 @@ const AdminDashboard: React.FC = () => {
                                                 return null;
                                             })}
                                         </div>
-
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
@@ -1098,3 +1136,4 @@ const AdminDashboard: React.FC = () => {
 };
 
 export default AdminDashboard;
+
