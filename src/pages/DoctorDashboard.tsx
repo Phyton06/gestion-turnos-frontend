@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Clock, LogOut, Activity, User, FileText, CheckCircle, XCircle, Calendar, CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, LogOut, Activity, User, FileText, CheckCircle, XCircle, Calendar, CalendarX2, ChevronLeft, ChevronRight, Sun, Moon } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useSessionGuard } from '../hooks/useSessionGuard';
 import { clearSession, getStoredUser } from '../utils/auth';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale';
+import { useTheme } from '../context/ThemeContext';
 
 // Tipos
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
@@ -514,49 +515,61 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
+    const { isDark, toggleTheme } = useTheme();
+
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Navbar Médico - Responsive */}
-            <nav className="bg-white shadow-md shadow-emerald-900/5 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center relative z-10">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
+            {/* Navbar Medico - Responsive */}
+            <nav className="bg-white dark:bg-slate-800 shadow-md shadow-emerald-900/5 dark:shadow-slate-900/50 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center relative z-10 border-b border-gray-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 sm:gap-4 border-l-4 border-emerald-500 pl-3 sm:pl-4">
-                    <div className="bg-emerald-50 p-2 sm:p-3 rounded-2xl text-emerald-600 shadow-inner">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/30 p-2 sm:p-3 rounded-2xl text-emerald-600 shadow-inner">
                         <Activity size={24} className="sm:hidden" />
                         <Activity size={32} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h1 className="text-base sm:text-2xl font-black text-gray-900 tracking-tight leading-none mb-0.5">
+                        <h1 className="text-base sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-0.5">
                             <span className="hidden sm:inline">Bienvenido, </span>
                             <span className="text-emerald-600">
                                 {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).nombre : medicoInfo.nombre}
                             </span>
                         </h1>
-                        <p className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-widest hidden sm:block">
-                            {medicoInfo.especialidad || 'Especialista'} | Portal Médico
+                        <p className="text-xs sm:text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest hidden sm:block">
+                            {medicoInfo.especialidad || 'Especialista'} | Portal Medico
                         </p>
                         <p className="text-xs font-bold text-emerald-600 sm:hidden">
-                            {medicoInfo.especialidad || 'Portal Médico'}
+                            {medicoInfo.especialidad || 'Portal Medico'}
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-xs sm:text-sm font-bold border border-gray-100 shadow-sm active:scale-95"
-                >
-                    <LogOut size={16} />
-                    <span className="hidden sm:inline">Cerrar Sesión</span>
-                    <span className="sm:hidden">Salir</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Toggle de tema */}
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-xl bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
+                        title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    >
+                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-xs sm:text-sm font-bold border border-gray-100 dark:border-slate-600 shadow-sm active:scale-95"
+                    >
+                        <LogOut size={16} />
+                        <span className="hidden sm:inline">Cerrar Sesion</span>
+                        <span className="sm:hidden">Salir</span>
+                    </button>
+                </div>
             </nav>
 
             <div className="flex-1 container mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 
-                {/* Columna Izquierda: Resumen del Día */}
+                {/* Columna Izquierda: Resumen del Dia */}
                 <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
-                    <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                    <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                         <div>
-                            <h2 className="text-xl sm:text-3xl font-black text-gray-900 tracking-tight">Agenda de Consultas</h2>
-                            <p className="text-gray-500 font-medium mt-1 text-sm sm:text-base">
+                            <h2 className="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Agenda de Consultas</h2>
+                            <p className="text-gray-500 dark:text-slate-400 font-medium mt-1 text-sm sm:text-base">
                                 Administra tus pacientes para la fecha seleccionada.
                             </p>
                         </div>
@@ -587,9 +600,9 @@ const DoctorDashboard: React.FC = () => {
                     </div>
 
                     {/* Lista de Citas */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                            <h3 className="font-semibold text-gray-700">Pacientes Programados</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700/50">
+                            <h3 className="font-semibold text-gray-700 dark:text-slate-200">Pacientes Programados</h3>
                             <button className="text-emerald-600 text-sm font-medium hover:underline" onClick={() => {
                                 fetchAgenda().then(() => fetchDisponibilidad());
                             }}>Actualizar</button>
@@ -617,7 +630,7 @@ const DoctorDashboard: React.FC = () => {
                                     return (
                                         <>
                                             {displayedCitas.map((cita) => (
-                                                <div key={cita.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-gray-50 transition-colors group">
+                                                <div key={cita.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors group border-b border-gray-50 dark:border-slate-700 last:border-0">
                                                     <div className="flex items-center gap-4">
                                                         <div className={`p-3 rounded-full ${cita.estado === 'completado' ? 'bg-gray-100 text-gray-400' :
                                                             cita.estado === 'cancelado' || cita.estado === 'no_asistio' ? 'bg-red-50 text-red-400' :
@@ -627,13 +640,13 @@ const DoctorDashboard: React.FC = () => {
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
-                                                                <h4 className={`font-bold text-lg ${cita.estado === 'completado' ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                                                                <h4 className={`font-bold text-lg ${cita.estado === 'completado' ? 'text-gray-500 dark:text-slate-500 line-through' : 'text-gray-800 dark:text-white'}`}>
                                                                     {cita.paciente}
                                                                 </h4>
                                                                 {cita.estado === 'completado' && <CheckCircle size={16} className="text-green-500" />}
                                                                 {(cita.estado === 'cancelado' || cita.estado === 'no_asistio') && <XCircle size={16} className="text-red-500" />}
                                                             </div>
-                                                            <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                                                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400 mt-1">
                                                                 <span className="flex items-center gap-1 font-bold"><Clock size={14} className="text-emerald-500" /> {cita.hora}</span>
                                                                 <span className="flex items-center gap-1"><FileText size={14} /> {cita.motivo}</span>
                                                             </div>
@@ -668,21 +681,21 @@ const DoctorDashboard: React.FC = () => {
                                             ))}
 
                                             {totalCitasPages > 1 && (
-                                                <div className="flex justify-between items-center p-6 bg-gray-50/50 border-t border-gray-100">
+                                                <div className="flex justify-between items-center p-6 bg-gray-50/50 dark:bg-slate-700/30 border-t border-gray-100 dark:border-slate-700">
                                                     <button
                                                         onClick={() => setCurrentCitasPage(p => Math.max(0, p - 1))}
                                                         disabled={currentCitasPage === 0}
-                                                        className="p-2 rounded-xl border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-white hover:shadow-sm transition-all hover:text-emerald-600 hover:border-emerald-200"
+                                                        className="p-2 rounded-xl border border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-400 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition-all hover:text-emerald-600 hover:border-emerald-200"
                                                     >
                                                         <ChevronLeft size={20} />
                                                     </button>
-                                                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
-                                                        Pág. {currentCitasPage + 1} / {totalCitasPages}
+                                                    <span className="text-xs font-black text-gray-400 dark:text-slate-400 uppercase tracking-widest bg-white dark:bg-slate-700 px-4 py-2 rounded-lg shadow-sm border border-gray-100 dark:border-slate-600">
+                                                        Pag. {currentCitasPage + 1} / {totalCitasPages}
                                                     </span>
                                                     <button
                                                         onClick={() => setCurrentCitasPage(p => Math.min(totalCitasPages - 1, p + 1))}
                                                         disabled={currentCitasPage === totalCitasPages - 1}
-                                                        className="p-2 rounded-xl border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-white hover:shadow-sm transition-all hover:text-emerald-600 hover:border-emerald-200"
+                                                        className="p-2 rounded-xl border border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-400 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition-all hover:text-emerald-600 hover:border-emerald-200"
                                                     >
                                                         <ChevronRight size={20} />
                                                     </button>
@@ -722,8 +735,8 @@ const DoctorDashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="font-bold text-gray-800 mb-4">Horas libres para consultas hoy</h3>
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <h3 className="font-bold text-gray-800 dark:text-white mb-4">Horas libres para consultas hoy</h3>
                         <div className="space-y-3">
                             {(() => {
                                 const now = new Date();
@@ -769,8 +782,8 @@ const DoctorDashboard: React.FC = () => {
                                     <>
                                         <div className="space-y-3">
                                             {displayedHuecos.map(hueco => (
-                                                <div key={hueco.id} className="flex justify-between items-center p-3 rounded-lg border bg-gray-50 border-dashed border-gray-300 hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors">
-                                                    <span className="font-medium text-gray-600">{hueco.hora}</span>
+                                                <div key={hueco.id} className="flex justify-between items-center p-3 rounded-lg border bg-gray-50 dark:bg-slate-700/50 border-dashed border-gray-300 dark:border-slate-600 hover:border-emerald-300 hover:bg-emerald-50/30 dark:hover:bg-emerald-900/20 transition-colors">
+                                                    <span className="font-medium text-gray-600 dark:text-slate-200">{hueco.hora}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-bold px-2 py-1 rounded-full text-green-600 bg-green-50 uppercase tracking-tighter hidden sm:inline-block">
                                                             Disponible
@@ -787,21 +800,21 @@ const DoctorDashboard: React.FC = () => {
                                         </div>
 
                                         {totalPages > 1 && (
-                                            <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+                                            <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
                                                 <button
                                                     onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
                                                     disabled={currentPage === 0}
-                                                    className="p-2 rounded-xl border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all hover:text-emerald-600 hover:border-emerald-100"
+                                                    className="p-2 rounded-xl border border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-400 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all hover:text-emerald-600 hover:border-emerald-100"
                                                 >
                                                     <ChevronLeft size={20} />
                                                 </button>
-                                                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                                                    Pág. {currentPage + 1} / {totalPages}
+                                                <span className="text-xs font-black text-gray-400 dark:text-slate-400 uppercase tracking-widest">
+                                                    Pag. {currentPage + 1} / {totalPages}
                                                 </span>
                                                 <button
                                                     onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
                                                     disabled={currentPage === totalPages - 1}
-                                                    className="p-2 rounded-xl border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all hover:text-emerald-600 hover:border-emerald-100"
+                                                    className="p-2 rounded-xl border border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-400 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all hover:text-emerald-600 hover:border-emerald-100"
                                                 >
                                                     <ChevronRight size={20} />
                                                 </button>

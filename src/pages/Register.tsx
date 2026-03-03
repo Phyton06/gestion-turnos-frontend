@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus, User, Lock, Mail, Phone, ChevronDown, Search } from 'lucide-react';
+import { UserPlus, User, Lock, Mail, Phone, ChevronDown, Search, Sun, Moon } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useTheme } from '../context/ThemeContext';
 
 interface Country {
     code: string;
@@ -21,6 +22,7 @@ const formatPhoneNumber = (digits: string): string => {
 };
 
 const Register: React.FC = () => {
+    const { isDark, toggleTheme } = useTheme();
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -161,15 +163,23 @@ const Register: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen w-full flex bg-gray-50 items-center justify-center p-4">
-            <div className="w-full max-w-2xl bg-white p-10 rounded-[2rem] shadow-xl border border-gray-100">
+        <div className="min-h-screen w-full flex bg-gray-50 dark:bg-slate-900 items-center justify-center p-4 relative">
+            {/* Boton toggle de tema */}
+            <button
+                onClick={toggleTheme}
+                className="absolute top-4 right-4 z-50 p-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm transition-all"
+                title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <div className="w-full max-w-2xl bg-white dark:bg-slate-800 p-10 rounded-[2rem] shadow-xl border border-gray-100 dark:border-slate-700">
 
                 <div className="text-center mb-10">
-                    <div className="inline-flex justify-center items-center w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 mb-6 shadow-inner border border-indigo-100">
+                    <div className="inline-flex justify-center items-center w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 mb-6 shadow-inner border border-indigo-100 dark:border-indigo-800">
                         <UserPlus size={32} />
                     </div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tight">Crear una cuenta</h2>
-                    <p className="mt-2 font-medium text-gray-500">Regístrate para gestionar tus citas médicas.</p>
+                    <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Crear una cuenta</h2>
+                    <p className="mt-2 font-medium text-gray-500 dark:text-slate-400">Registrate para gestionar tus citas medicas.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -177,7 +187,7 @@ const Register: React.FC = () => {
 
                         {/* Nombre */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nombre</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                     <User size={18} />
@@ -186,7 +196,7 @@ const Register: React.FC = () => {
                                     type="text"
                                     name="nombre"
                                     required
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
                                     placeholder="Juan"
                                     value={formData.nombre}
                                     onChange={handleNameChange}
@@ -196,7 +206,7 @@ const Register: React.FC = () => {
 
                         {/* Apellido */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Apellido</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                     <User size={18} />
@@ -205,8 +215,8 @@ const Register: React.FC = () => {
                                     type="text"
                                     name="apellido"
                                     required
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                    placeholder="Pérez"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                                    placeholder="Perez"
                                     value={formData.apellido}
                                     onChange={handleNameChange}
                                 />
@@ -215,7 +225,7 @@ const Register: React.FC = () => {
 
                         {/* Email */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Correo Electronico</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                     <Mail size={18} />
@@ -224,7 +234,7 @@ const Register: React.FC = () => {
                                     type="email"
                                     name="email"
                                     required
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
                                     placeholder="juan.perez@ejemplo.com"
                                     value={formData.email}
                                     onChange={handleChange}
