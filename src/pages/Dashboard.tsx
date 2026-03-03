@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar as CalendarIcon, Clock, LogOut, Activity, User, Plus, ChevronLeft, ChevronRight, Search, FilterX } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, LogOut, Activity, User, Plus, ChevronLeft, ChevronRight, Search, FilterX, Sun, Moon } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useSessionGuard } from '../hooks/useSessionGuard';
 import { clearSession, getStoredUser } from '../utils/auth';
+import { useTheme } from '../context/ThemeContext';
 
 // Interfaces
 interface Especialidad {
@@ -46,9 +47,10 @@ interface Turno {
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 const Dashboard: React.FC = () => {
-    useSessionGuard(); // Protege la ruta: chequeo en mount + timer de expiración
+    useSessionGuard();
     const navigate = useNavigate();
     const location = useLocation();
+    const { isDark, toggleTheme } = useTheme();
 
     // UI States
     const [view, setView] = useState<'dashboard' | 'booking'>('dashboard');
@@ -340,41 +342,49 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-900 flex flex-col font-sans">
             {/* Navbar Premium - Responsive */}
-            <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-50">
+            <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-slate-700/50 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-50">
                 <div className="flex items-center gap-2 sm:gap-3">
                     <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-200">
                         <Activity size={20} className="sm:hidden" />
                         <Activity size={24} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h1 className="text-base sm:text-xl font-black text-gray-900 tracking-tight">CitasOnline</h1>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none hidden sm:block">Portal Paciente</p>
+                        <h1 className="text-base sm:text-xl font-black text-gray-900 dark:text-white tracking-tight">CitasOnline</h1>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest leading-none hidden sm:block">Portal Paciente</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-6">
-                    <div className="hidden md:flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="hidden md:flex items-center gap-3 bg-gray-50 dark:bg-slate-800 px-4 py-2 rounded-xl border border-gray-100 dark:border-slate-700">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 font-bold">
                             {userName.charAt(0)}
                         </div>
-                        <span className="text-sm text-gray-700 font-bold">Hola, {userName.split(' ')[0]}</span>
+                        <span className="text-sm text-gray-700 dark:text-slate-300 font-bold">Hola, {userName.split(' ')[0]}</span>
                     </div>
-                    {/* Mobile user avatar */}
                     <div className="flex md:hidden items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 font-bold text-xs">
                             {userName.charAt(0)}
                         </div>
                     </div>
+
+                    {/* Toggle de tema */}
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                        title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    >
+                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
 
                     <button
                         onClick={() => {
                             clearSession();
                             navigate('/login', { replace: true });
                         }}
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                        title="Cerrar sesión"
+                        className="p-2 text-gray-400 dark:text-slate-400 hover:text-red-500 transition-colors"
+                        title="Cerrar sesion"
                     >
                         <LogOut size={20} />
                     </button>
@@ -384,11 +394,10 @@ const Dashboard: React.FC = () => {
             <main className="flex-1 container mx-auto p-3 sm:p-6 max-w-6xl">
                 {view === 'dashboard' ? (
                     <div className="space-y-4 sm:space-y-8 animate-in fade-in duration-500">
-                        {/* Header Section */}
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4 sm:mb-8">
                             <div>
-                                <h2 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight mb-1 sm:mb-2">Tu Resumen</h2>
-                                <p className="text-gray-500 font-medium text-sm sm:text-lg">Gestiona tus consultas y salud personal.</p>
+                                <h2 className="text-2xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-1 sm:mb-2">Tu Resumen</h2>
+                                <p className="text-gray-500 dark:text-slate-400 font-medium text-sm sm:text-lg">Gestiona tus consultas y salud personal.</p>
                             </div>
                             <button
                                 onClick={() => setView('booking')}
@@ -472,11 +481,11 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         {/* Citas Main Table/Grid */}
-                        <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-                            <div className="p-4 sm:p-8 border-b border-gray-50 flex flex-col gap-4 sm:gap-6">
+                        <div className="bg-white dark:bg-slate-800 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-gray-200/50 dark:shadow-slate-900/50 border border-gray-100 dark:border-slate-700 overflow-hidden">
+                            <div className="p-4 sm:p-8 border-b border-gray-50 dark:border-slate-700 flex flex-col gap-4 sm:gap-6">
                                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-                                    <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">Listado de Consultas</h3>
-                                    <div className="flex gap-1 bg-gray-50 p-1.5 rounded-2xl w-full sm:w-auto overflow-x-auto">
+                                    <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight">Listado de Consultas</h3>
+                                    <div className="flex gap-1 bg-gray-50 dark:bg-slate-700/50 p-1.5 rounded-2xl w-full sm:w-auto overflow-x-auto">
                                         {['todas', 'activo', 'completado', 'cancelado'].map(status => (
                                             <button
                                                 key={status}
@@ -485,7 +494,9 @@ const Dashboard: React.FC = () => {
                                                     setCurrentPage(1);
                                                 }}
                                                 className={`flex-1 md:flex-none px-5 py-2 text-xs font-black rounded-xl transition-all uppercase tracking-tighter
-                                                    ${filterStatus === status ? 'bg-white shadow-md text-blue-600' : 'text-gray-400 hover:text-gray-600'}
+                                                    ${filterStatus === status
+                                                        ? 'bg-white dark:bg-slate-600 shadow-md text-blue-600 dark:text-blue-400'
+                                                        : 'text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200'}
                                                 `}
                                             >
                                                 {status === 'activo' ? 'Próximas' : status === 'cancelado' ? 'Inasistencias / Canceladas' : status === 'completado' ? 'Completas' : 'Todas'}
@@ -501,13 +512,13 @@ const Dashboard: React.FC = () => {
                                         </div>
                                         <input
                                             type="text"
-                                            placeholder="Buscar médico o especialidad..."
+                                            placeholder="Buscar medico o especialidad..."
                                             value={searchTerm}
                                             onChange={(e) => {
                                                 setSearchTerm(e.target.value);
                                                 setCurrentPage(1);
                                             }}
-                                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                                            className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 dark:text-white dark:placeholder-slate-400 border border-gray-100 dark:border-slate-600 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
                                         />
                                     </div>
                                     <div className="relative group">
@@ -521,7 +532,7 @@ const Dashboard: React.FC = () => {
                                                 setFilterDate(e.target.value);
                                                 setCurrentPage(1);
                                             }}
-                                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                                            className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 dark:text-white border border-gray-100 dark:border-slate-600 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
                                         />
                                     </div>
                                     <div className="flex items-end">
@@ -587,8 +598,8 @@ const Dashboard: React.FC = () => {
                                                     <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-inner">
                                                         <CalendarIcon size={40} className="text-gray-200" />
                                                     </div>
-                                                    <h4 className="text-lg font-bold text-gray-800">Sin registros</h4>
-                                                    <p className="text-gray-400 text-sm max-w-xs">No se encontraron citas que coincidan con tus filtros.</p>
+                                                    <h4 className="text-lg font-bold text-gray-800 dark:text-slate-200">Sin registros</h4>
+                                                    <p className="text-gray-400 dark:text-slate-400 text-sm max-w-xs">No se encontraron citas que coincidan con tus filtros.</p>
                                                 </div>
                                             );
                                         }
@@ -597,7 +608,7 @@ const Dashboard: React.FC = () => {
                                             <>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                     {paginatedItems.map(turno => (
-                                                        <div key={turno.id} className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all">
+                                                        <div key={turno.id} className="group bg-white dark:bg-slate-700/50 border border-gray-100 dark:border-slate-600 rounded-3xl p-6 hover:shadow-2xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all">
                                                             <div className="flex justify-between items-start mb-6">
                                                                 <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest
                                                                 ${turno.estado === 'activo' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
@@ -608,7 +619,7 @@ const Dashboard: React.FC = () => {
                                                                         turno.estado === 'completado' ? 'Completado' :
                                                                             turno.estado === 'no_asistio' ? 'Inasistencia' : 'Cancelada'}
                                                                 </div>
-                                                                <span className="text-xs font-bold text-gray-300">ID-{turno.id}</span>
+                                                                <span className="text-xs font-bold text-gray-300 dark:text-slate-500">ID-{turno.id}</span>
                                                             </div>
 
                                                             <div className="flex items-center gap-4 mb-6">
@@ -616,19 +627,19 @@ const Dashboard: React.FC = () => {
                                                                     <User size={28} />
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="font-black text-gray-900 leading-none mb-1">{turno.medico}</h4>
+                                                                    <h4 className="font-black text-gray-900 dark:text-white leading-none mb-1">{turno.medico}</h4>
                                                                     <p className="text-[11px] text-blue-600 font-black uppercase tracking-widest">{turno.especialidad}</p>
                                                                 </div>
                                                             </div>
 
                                                             <div className="grid grid-cols-2 gap-3 mb-6">
-                                                                <div className="bg-gray-50/80 p-3 rounded-2xl flex items-center gap-2">
+                                                                <div className="bg-gray-50/80 dark:bg-slate-600/40 p-3 rounded-2xl flex items-center gap-2">
                                                                     <CalendarIcon size={14} className="text-blue-500" />
-                                                                    <span className="text-xs font-black text-gray-700">{turno.fecha}</span>
+                                                                    <span className="text-xs font-black text-gray-700 dark:text-slate-200">{turno.fecha}</span>
                                                                 </div>
-                                                                <div className="bg-gray-50/80 p-3 rounded-2xl flex items-center gap-2">
+                                                                <div className="bg-gray-50/80 dark:bg-slate-600/40 p-3 rounded-2xl flex items-center gap-2">
                                                                     <Clock size={14} className="text-blue-500" />
-                                                                    <span className="text-xs font-black text-gray-700">{turno.hora}</span>
+                                                                    <span className="text-xs font-black text-gray-700 dark:text-slate-200">{turno.hora}</span>
                                                                 </div>
                                                             </div>
 
@@ -697,22 +708,22 @@ const Dashboard: React.FC = () => {
                         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10">
                             <button
                                 onClick={() => setView('dashboard')}
-                                className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 hover:shadow-lg transition-all border border-gray-100 flex-shrink-0"
+                                className="w-10 h-10 sm:w-12 sm:h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 hover:shadow-lg transition-all border border-gray-100 dark:border-slate-700 flex-shrink-0"
                             >
                                 <ChevronLeft size={22} />
                             </button>
                             <div>
-                                <h2 className="text-xl sm:text-3xl font-black text-gray-900 tracking-tight">Nueva Consulta</h2>
-                                <p className="text-gray-500 font-medium italic text-sm sm:text-base">Sigue los pasos para confirmar tu espacio.</p>
+                                <h2 className="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Nueva Consulta</h2>
+                                <p className="text-gray-500 dark:text-slate-400 font-medium italic text-sm sm:text-base">Sigue los pasos para confirmar tu espacio.</p>
                             </div>
                         </div>
 
                         <div className="space-y-4 sm:space-y-8">
                             {/* Paso 1: Especialidad */}
-                            <section className="bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100">
+                            <section className="bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700">
                                 <div className="flex items-center gap-3 mb-5 sm:mb-8">
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-sm sm:text-base">1</div>
-                                    <h3 className="text-base sm:text-xl font-black text-gray-800 tracking-tight">¿Qué especialidad buscas?</h3>
+                                    <h3 className="text-base sm:text-xl font-black text-gray-800 dark:text-white tracking-tight">Que especialidad buscas?</h3>
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                                     {especialidades.map(esp => (
@@ -731,11 +742,11 @@ const Dashboard: React.FC = () => {
                                 </div>
                             </section>
 
-                            {/* Paso 2: Médico */}
-                            <section className={`bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 transition-all duration-500 ${!selectedEspecialidad ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}>
+                            {/* Paso 2: Medico */}
+                            <section className={`bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 transition-all duration-500 ${!selectedEspecialidad ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}>
                                 <div className="flex items-center gap-3 mb-5 sm:mb-8">
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-sm sm:text-base">2</div>
-                                    <h3 className="text-base sm:text-xl font-black text-gray-800 tracking-tight">Elige tu especialista</h3>
+                                    <h3 className="text-base sm:text-xl font-black text-gray-800 dark:text-white tracking-tight">Elige tu especialista</h3>
                                 </div>
 
                                 {loadingMedicos ? (
@@ -770,13 +781,13 @@ const Dashboard: React.FC = () => {
                             </section>
 
                             {/* Paso 3: Calendario */}
-                            <section className={`bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 transition-all duration-500 ${!selectedMedico ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}>
+                            <section className={`bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 transition-all duration-500 ${!selectedMedico ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}>
                                 <div className="flex items-center gap-3 mb-5 sm:mb-8">
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-sm sm:text-base">3</div>
-                                    <h3 className="text-base sm:text-xl font-black text-gray-800 tracking-tight">¿Cuándo quieres venir?</h3>
+                                    <h3 className="text-base sm:text-xl font-black text-gray-800 dark:text-white tracking-tight">Cuando quieres venir?</h3>
                                 </div>
 
-                                <div className="bg-gray-50 p-3 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem]">
+                                <div className="bg-gray-50 dark:bg-slate-700/40 p-3 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem]">
                                     <div className="flex justify-between items-center mb-6 sm:mb-10 px-2 sm:px-4">
                                         <button className="text-gray-400 hover:text-blue-600 font-black text-sm sm:text-base" onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}>ANT.</button>
                                         <span className="font-black text-base sm:text-xl text-gray-900 uppercase tracking-tighter">

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Search, UserPlus, Shield, AlertTriangle, CheckCircle, XCircle, Pencil, Filter, X, ChevronLeft, ChevronRight, Calendar, Phone, ChevronDown } from 'lucide-react';
+import { LogOut, Search, UserPlus, Shield, AlertTriangle, CheckCircle, XCircle, Pencil, Filter, X, ChevronLeft, ChevronRight, Calendar, Phone, ChevronDown, Sun, Moon } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useSessionGuard } from '../hooks/useSessionGuard';
 import { clearSession, getStoredUser } from '../utils/auth';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale';
+import { useTheme } from '../context/ThemeContext';
 
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -502,43 +503,55 @@ const AdminDashboard: React.FC = () => {
         setCurrentPage(1);
     }, [searchTerm, filterRol, filterEstado, filterDate, itemsPerPage]);
 
+    const { isDark, toggleTheme } = useTheme();
+
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
             {/* Navbar Admin - Responsive */}
-            <nav className="bg-white shadow-md shadow-indigo-900/5 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center relative z-10">
+            <nav className="bg-white dark:bg-slate-800 shadow-md shadow-indigo-900/5 dark:shadow-slate-900/50 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center relative z-10 border-b border-gray-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 sm:gap-4 border-l-4 border-indigo-500 pl-3 sm:pl-4">
-                    <div className="bg-indigo-50 p-2 sm:p-3 rounded-2xl text-indigo-600 shadow-inner">
+                    <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 sm:p-3 rounded-2xl text-indigo-600 shadow-inner">
                         <Shield size={22} className="sm:hidden" />
                         <Shield size={32} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h1 className="text-base sm:text-2xl font-black text-gray-900 tracking-tight leading-none mb-0.5">
-                            <span className="hidden sm:inline">Panel de Administración</span>
+                        <h1 className="text-base sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-0.5">
+                            <span className="hidden sm:inline">Panel de Administracion</span>
                             <span className="sm:hidden">Admin Panel</span>
                         </h1>
-                        <p className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-widest hidden sm:block">
-                            Gestión de Turnos v1.0 | <span className="text-indigo-600">{adminName}</span>
+                        <p className="text-xs sm:text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest hidden sm:block">
+                            Gestion de Turnos v1.0 | <span className="text-indigo-600">{adminName}</span>
                         </p>
                         <p className="text-xs font-bold text-indigo-600 sm:hidden">{adminName}</p>
                     </div>
                 </div>
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-xs sm:text-sm font-bold border border-gray-100 shadow-sm active:scale-95"
-                >
-                    <LogOut size={16} />
-                    <span className="hidden sm:inline">Cerrar Sesión</span>
-                    <span className="sm:hidden">Salir</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Toggle de tema */}
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-xl bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
+                        title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    >
+                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-xs sm:text-sm font-bold border border-gray-100 dark:border-slate-600 shadow-sm active:scale-95"
+                    >
+                        <LogOut size={16} />
+                        <span className="hidden sm:inline">Cerrar Sesion</span>
+                        <span className="sm:hidden">Salir</span>
+                    </button>
+                </div>
             </nav>
 
             <div className="flex-1 container mx-auto p-3 sm:p-6 max-w-7xl">
 
                 {/* Header y Acciones */}
-                <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-8">
+                <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-8">
                     <div>
-                        <h2 className="text-xl sm:text-3xl font-black text-gray-900 tracking-tight">Gestión de Usuarios</h2>
-                        <p className="text-gray-500 font-medium mt-1 text-sm sm:text-base">Administra pacientes, médicos y permisos del sistema.</p>
+                        <h2 className="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Gestion de Usuarios</h2>
+                        <p className="text-gray-500 dark:text-slate-400 font-medium mt-1 text-sm sm:text-base">Administra pacientes, medicos y permisos del sistema.</p>
                     </div>
                     <button
                         onClick={() => {
@@ -562,9 +575,9 @@ const AdminDashboard: React.FC = () => {
 
                 {/* Formulario de Creación/Edición (Expandible con animación) */}
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showCreateForm ? 'max-h-[2000px] opacity-100 mb-8' : 'max-h-0 opacity-0'}`}>
-                    <div className="bg-white p-8 rounded-[2rem] shadow-lg border border-indigo-100 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-lg border border-indigo-100 dark:border-slate-700 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-3 h-full bg-indigo-500"></div>
-                        <h3 className="font-black text-2xl mb-6 text-gray-900 flex items-center gap-3">
+                        <h3 className="font-black text-2xl mb-6 text-gray-900 dark:text-white flex items-center gap-3">
                             {editUserId ? 'Editar Usuario' : 'Registrar Nuevo Usuario'}
                             {!editUserId && (
                                 <span className="text-xs font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
@@ -574,23 +587,23 @@ const AdminDashboard: React.FC = () => {
                         </h3>
                         <form onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                <input name="nombre" placeholder="Ej: Juan" value={formData.nombre} onChange={handleNameChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nombre</label>
+                                <input name="nombre" placeholder="Ej: Juan" value={formData.nombre} onChange={handleNameChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                                <input name="apellido" placeholder="Ej: Pérez" value={formData.apellido} onChange={handleNameChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Apellido</label>
+                                <input name="apellido" placeholder="Ej: Perez" value={formData.apellido} onChange={handleNameChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input name="email" type="email" placeholder="usuario@ejemplo.com" value={formData.email} onChange={handleInputChange} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email</label>
+                                <input name="email" type="email" placeholder="usuario@ejemplo.com" value={formData.email} onChange={handleInputChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña {editUserId && '(Opcional)'}</label>
-                                <input name="password" type="password" placeholder={editUserId ? "Dejar en blanco para no cambiar" : "••••••"} value={formData.password} onChange={handleInputChange} required={!editUserId} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Contrasena {editUserId && '(Opcional)'}</label>
+                                <input name="password" type="password" placeholder={editUserId ? "Dejar en blanco para no cambiar" : "••••••"} value={formData.password} onChange={handleInputChange} required={!editUserId} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Telefono</label>
                                 <div className="flex gap-2">
                                     {/* Selector de país */}
                                     <div className="relative flex-shrink-0" ref={countryDropdownRef}>
@@ -681,8 +694,8 @@ const AdminDashboard: React.FC = () => {
                                 )}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-                                <select name="idRol" value={formData.idRol} onChange={handleInputChange} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white transition-all cursor-pointer">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Rol</label>
+                                <select name="idRol" value={formData.idRol} onChange={handleInputChange} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all cursor-pointer">
                                     <option value={1}>Administrador</option>
                                     <option value={2}>Médico</option>
                                     <option value={3}>Paciente</option>
