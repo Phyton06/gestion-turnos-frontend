@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind v4: clase 'dark' en el elemento raiz controla el modo oscuro */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -24,9 +27,10 @@ html.dark body {
 }
 
 /* Transicion suave en todos los elementos durante cambio de tema */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: ease;
   transition-duration: 150ms;
 }
-

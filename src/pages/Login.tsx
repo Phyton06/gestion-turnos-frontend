@@ -548,21 +548,21 @@ const Login: React.FC = () => {
       {/* Overlay de Carga 5s (Nueva solicitud) */}
       {
         redirecting && (
-          <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
             <div className="relative mb-8">
-              <div className="w-24 h-24 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="w-24 h-24 border-4 border-indigo-100 dark:border-slate-700 border-t-indigo-600 rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <Activity size={32} className="text-indigo-600 animate-pulse" />
               </div>
             </div>
 
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">¡Bienvenid@ {welcomeName}!</h2>
-            <p className="text-gray-500 max-w-xs mx-auto mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">¡Bienvenid@ {welcomeName}!</h2>
+            <p className="text-gray-500 dark:text-slate-400 max-w-xs mx-auto mb-8">
               Gracias por usar los servicios de gestión de citas. Estamos preparando tu panel personalizado...
             </p>
 
             {/* Barra de progreso simulada */}
-            <div className="w-full max-w-xs bg-gray-100 h-2 rounded-full overflow-hidden">
+            <div className="w-full max-w-xs bg-gray-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
               <div className="bg-indigo-600 h-full animate-[progress_8s_linear_forwards]"></div>
             </div>
 

@@ -346,7 +346,7 @@ const Dashboard: React.FC = () => {
             {/* Navbar Premium - Responsive */}
             <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-slate-700/50 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-50">
                 <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-200">
+                    <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
                         <Activity size={20} className="sm:hidden" />
                         <Activity size={24} className="hidden sm:block" />
                     </div>
@@ -401,7 +401,7 @@ const Dashboard: React.FC = () => {
                             </div>
                             <button
                                 onClick={() => setView('booking')}
-                                className="w-full sm:w-auto bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 active:scale-95 group"
+                                className="w-full sm:w-auto bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 dark:shadow-blue-900/40 active:scale-95 group"
                             >
                                 <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                                 Agendar Nueva Cita
@@ -430,7 +430,7 @@ const Dashboard: React.FC = () => {
                                     .filter(t => t.estado === 'activo')
                                     .sort((a, b) => parseDateTime(a.fecha, a.hora) - parseDateTime(b.fecha, b.hora))[0];
                                 return proxima ? (
-                                    <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 animate-in slide-in-from-top duration-700 relative overflow-hidden group">
+                                    <div className="bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 animate-in slide-in-from-top duration-700 relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
                                             <Activity size={180} />
                                         </div>
@@ -441,25 +441,25 @@ const Dashboard: React.FC = () => {
                                         </div>
 
                                         <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-8 w-full items-start sm:items-center">
-                                            <div className="space-y-1 col-span-2 sm:col-span-1 lg:col-span-1 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0">
-                                                <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight leading-none">Próxima Cita</h3>
+                                            <div className="space-y-1 col-span-2 sm:col-span-1 lg:col-span-1 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-slate-600 pb-3 sm:pb-0">
+                                                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight leading-none">Proxima Cita</h3>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Fecha</p>
-                                                <h3 className="text-sm sm:text-xl font-black text-gray-800 tracking-tight">{proxima.fecha}</h3>
+                                                <p className="text-[10px] text-gray-400 dark:text-slate-500 font-black uppercase tracking-[0.2em]">Fecha</p>
+                                                <h3 className="text-sm sm:text-xl font-black text-gray-800 dark:text-white tracking-tight">{proxima.fecha}</h3>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Horario</p>
-                                                <h3 className="text-sm sm:text-xl font-black text-gray-800 tracking-tight">{proxima.hora}</h3>
+                                                <p className="text-[10px] text-gray-400 dark:text-slate-500 font-black uppercase tracking-[0.2em]">Horario</p>
+                                                <h3 className="text-sm sm:text-xl font-black text-gray-800 dark:text-white tracking-tight">{proxima.hora}</h3>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Médico</p>
-                                                <h3 className="text-sm sm:text-xl font-black text-gray-800 tracking-tight">{proxima.medico}</h3>
+                                                <p className="text-[10px] text-gray-400 dark:text-slate-500 font-black uppercase tracking-[0.2em]">Medico</p>
+                                                <h3 className="text-sm sm:text-xl font-black text-gray-800 dark:text-white tracking-tight">{proxima.medico}</h3>
                                             </div>
                                             <div className="space-y-2">
                                                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Especialidad</p>
                                                 <div className="flex">
-                                                    <span className="bg-blue-600 text-white text-[10px] font-black px-3 sm:px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-blue-200">
+                                                    <span className="bg-blue-600 text-white text-[10px] font-black px-3 sm:px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
                                                         {proxima.especialidad}
                                                     </span>
                                                 </div>
@@ -467,7 +467,7 @@ const Dashboard: React.FC = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex items-center gap-6 opacity-60">
+                                    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 flex items-center gap-6 opacity-60">
                                         <div className="bg-gray-50 text-gray-300 p-5 rounded-2xl">
                                             <CalendarIcon size={32} />
                                         </div>
@@ -655,17 +655,17 @@ const Dashboard: React.FC = () => {
                                                     ))}
                                                 </div>
 
-                                                {/* Paginación Premium */}
+                                                {/* Paginacion Premium */}
                                                 {totalPages > 1 && (
-                                                    <div className="mt-12 flex justify-between items-center bg-gray-50/50 p-4 rounded-3xl border border-gray-100">
-                                                        <p className="text-xs text-gray-400 font-bold px-4">
-                                                            Mostrando <span className="text-gray-900">{paginatedItems.length}</span> de <span className="text-gray-900">{totalItems}</span> citas
+                                                    <div className="mt-12 flex justify-between items-center bg-gray-50/50 dark:bg-slate-700/30 p-4 rounded-3xl border border-gray-100 dark:border-slate-600">
+                                                        <p className="text-xs text-gray-400 dark:text-slate-400 font-bold px-4">
+                                                            Mostrando <span className="text-gray-900 dark:text-white">{paginatedItems.length}</span> de <span className="text-gray-900 dark:text-white">{totalItems}</span> citas
                                                         </p>
                                                         <div className="flex gap-2">
                                                             <button
                                                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                                                 disabled={currentPage === 1}
-                                                                className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
+                                                                className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 flex items-center justify-center text-gray-400 dark:text-slate-300 hover:text-blue-600 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
                                                             >
                                                                 <ChevronLeft size={20} />
                                                             </button>
@@ -677,8 +677,8 @@ const Dashboard: React.FC = () => {
                                                                         onClick={() => setCurrentPage(page)}
                                                                         className={`w-10 h-10 rounded-xl text-xs font-black transition-all
                                                                         ${currentPage === page
-                                                                                ? 'bg-blue-600 text-white shadow-xl shadow-blue-200'
-                                                                                : 'text-gray-400 hover:bg-white hover:text-gray-900'}
+                                                                                ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-blue-900/40'
+                                                                                : 'text-gray-400 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white'}
                                                                     `}
                                                                     >
                                                                         {page}
@@ -689,7 +689,7 @@ const Dashboard: React.FC = () => {
                                                             <button
                                                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                                                 disabled={currentPage === totalPages}
-                                                                className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
+                                                                className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 flex items-center justify-center text-gray-400 dark:text-slate-300 hover:text-blue-600 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
                                                             >
                                                                 <ChevronRight size={20} />
                                                             </button>
@@ -732,8 +732,8 @@ const Dashboard: React.FC = () => {
                                             onClick={() => setSelectedEspecialidad(esp.id)}
                                             className={`p-3 sm:p-4 rounded-2xl text-xs font-black text-center transition-all border-2
                                                 ${selectedEspecialidad === esp.id
-                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-200'
-                                                    : 'bg-white text-gray-500 border-gray-50 hover:border-blue-200 hover:text-blue-600'}
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-200 dark:shadow-blue-900/40'
+                                                    : 'bg-white dark:bg-slate-700 text-gray-500 dark:text-slate-300 border-gray-50 dark:border-slate-600 hover:border-blue-200 hover:text-blue-600'}
                                             `}
                                         >
                                             {esp.nombre}
@@ -933,7 +933,7 @@ const Dashboard: React.FC = () => {
                         <div className="p-10 space-y-8">
                             {/* Card del Médico */}
                             <div className="flex items-center gap-5 p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                <div className="w-16 h-16 bg-blue-600 rounded-[1.25rem] flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-200">
+                                <div className="w-16 h-16 bg-blue-600 rounded-[1.25rem] flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
                                     {(medicos.find(m => m.id === pendingBooking.medicoId)?.nombre || 'M').charAt(0)}
                                 </div>
                                 <div>
@@ -987,7 +987,7 @@ const Dashboard: React.FC = () => {
                                 <button
                                     onClick={executeReservar}
                                     disabled={loading}
-                                    className="flex-[1.5] px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-200 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-[1.5] px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-200 dark:shadow-blue-900/40 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

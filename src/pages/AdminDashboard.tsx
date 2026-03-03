@@ -634,7 +634,7 @@ const AdminDashboard: React.FC = () => {
                                                     width: dropdownPos.width,
                                                     zIndex: 99999
                                                 }}
-                                                className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                                                className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl shadow-2xl overflow-hidden"
                                             >
                                                 <div className="p-2 border-b border-gray-100">
                                                     <div className="relative">
@@ -643,7 +643,7 @@ const AdminDashboard: React.FC = () => {
                                                             type="text"
                                                             autoFocus
                                                             placeholder="Buscar país o código..."
-                                                            className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                             value={countrySearch}
                                                             onChange={e => setCountrySearch(e.target.value)}
                                                         />
@@ -658,8 +658,8 @@ const AdminDashboard: React.FC = () => {
                                                             key={c.code}
                                                             type="button"
                                                             onClick={() => { setSelectedCountry(c); setCountryDropdownOpen(false); setCountrySearch(''); }}
-                                                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-indigo-50 transition-colors
-                                                                ${selectedCountry?.code === c.code ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-gray-700'}`}
+                                                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors
+                                                                ${selectedCountry?.code === c.code ? 'bg-indigo-50 dark:bg-indigo-900/30 font-bold text-indigo-700' : 'text-gray-700 dark:text-slate-300'}`}
                                                         >
                                                             <span className="text-base leading-none flex-shrink-0">{c.flag}</span>
                                                             <span className="flex-1 truncate">{c.name}</span>
@@ -829,28 +829,28 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 {/* Tabla de Usuarios */}
-                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-200 overflow-hidden mb-4 sm:mb-8">
-                    {/* Barra de búsqueda y Filtros */}
-                    <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50">
+                <div className="bg-white dark:bg-slate-800 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden mb-4 sm:mb-8">
+                    {/* Barra de busqueda y Filtros */}
+                    <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30">
                         <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center">
                             <div className="relative flex-1 w-full">
                                 <Search size={18} className="text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                                 <input
                                     type="text"
                                     placeholder="Buscar por nombre, email o apellido..."
-                                    className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full outline-none transition-all text-sm"
+                                    className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full outline-none transition-all text-sm"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
 
                             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg pr-2 overflow-hidden shadow-sm">
-                                    <div className="bg-gray-100 p-2 text-gray-500 border-r border-gray-200">
+                                <div className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg pr-2 overflow-hidden shadow-sm">
+                                    <div className="bg-gray-100 dark:bg-slate-600 p-2 text-gray-500 dark:text-slate-300 border-r border-gray-200 dark:border-slate-500">
                                         <Filter size={16} />
                                     </div>
                                     <select
-                                        className="py-2 px-2 text-sm outline-none bg-transparent cursor-pointer"
+                                        className="py-2 px-2 text-sm outline-none bg-transparent dark:text-white cursor-pointer"
                                         value={filterRol}
                                         onChange={(e) => setFilterRol(e.target.value)}
                                     >
@@ -877,7 +877,7 @@ const AdminDashboard: React.FC = () => {
                                 </div>
 
                                 <select
-                                    className="py-2.5 px-3 text-sm bg-white border border-gray-200 rounded-lg outline-none shadow-sm cursor-pointer w-full sm:w-auto"
+                                    className="py-2.5 px-3 text-sm bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 border border-gray-200 rounded-lg outline-none shadow-sm cursor-pointer w-full sm:w-auto"
                                     value={filterEstado}
                                     onChange={(e) => setFilterEstado(e.target.value)}
                                 >
@@ -897,8 +897,8 @@ const AdminDashboard: React.FC = () => {
                             </div>
                         </div>
                         <div className="mt-3 flex justify-end">
-                            <div className="text-sm text-gray-500 bg-white px-3 py-1 rounded-md border border-gray-200 shadow-sm inline-block">
-                                Total resultados: <span className="font-bold text-gray-800">{filteredUsers.length}</span> usuarios
+                            <div className="text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-3 py-1 rounded-md border border-gray-200 dark:border-slate-600 shadow-sm inline-block">
+                                Total resultados: <span className="font-bold text-gray-800 dark:text-white">{filteredUsers.length}</span> usuarios
                             </div>
                         </div>
                     </div>
@@ -916,9 +916,9 @@ const AdminDashboard: React.FC = () => {
                     ) : (
                         <div>
                             {/* Vista Tarjetas para Mobile */}
-                            <div className="sm:hidden divide-y divide-gray-100">
+                            <div className="sm:hidden divide-y divide-gray-100 dark:divide-slate-700">
                                 {paginatedUsers.map(user => (
-                                    <div key={user.id} className="p-4 hover:bg-indigo-50/20 transition-colors">
+                                    <div key={user.id} className="p-4 hover:bg-indigo-50/20 dark:hover:bg-slate-700/50 transition-colors">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0
@@ -926,8 +926,8 @@ const AdminDashboard: React.FC = () => {
                                                     {user.nombre?.charAt(0)}{user.apellido?.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-gray-900 text-sm">{user.nombre} {user.apellido}</div>
-                                                    <div className="text-xs text-gray-500 truncate max-w-[180px]">{user.email}</div>
+                                                    <div className="font-semibold text-gray-900 dark:text-white text-sm">{user.nombre} {user.apellido}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-slate-400 truncate max-w-[180px]">{user.email}</div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5">
@@ -952,7 +952,7 @@ const AdminDashboard: React.FC = () => {
                                             <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${user.idRol === 1 ? 'bg-purple-50 text-purple-700 border-purple-100' :
                                                 user.idRol === 2 ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
                                                 }`}>{user.rol}</span>
-                                            <span className="flex items-center gap-1 text-xs text-gray-500">
+                                            <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                                                 <span className={`w-2 h-2 rounded-full ${user.estado ? 'bg-green-500' : 'bg-red-400'}`}></span>
                                                 {user.estado ? 'Activo' : 'Inactivo'}
                                             </span>
@@ -965,17 +965,17 @@ const AdminDashboard: React.FC = () => {
                             <div className="hidden sm:block overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-gray-50 text-xs uppercase text-gray-500 font-bold tracking-wider">
-                                            <th className="p-5 border-b border-gray-100">Usuario</th>
-                                            <th className="p-5 border-b border-gray-100">Rol</th>
-                                            <th className="p-5 border-b border-gray-100">Estado</th>
-                                            <th className="p-5 border-b border-gray-100">Registro</th>
-                                            <th className="p-5 border-b border-gray-100 text-right">Acciones</th>
+                                        <tr className="bg-gray-50 dark:bg-slate-700/60 text-xs uppercase text-gray-500 dark:text-slate-400 font-bold tracking-wider">
+                                            <th className="p-5 border-b border-gray-100 dark:border-slate-700">Usuario</th>
+                                            <th className="p-5 border-b border-gray-100 dark:border-slate-700">Rol</th>
+                                            <th className="p-5 border-b border-gray-100 dark:border-slate-700">Estado</th>
+                                            <th className="p-5 border-b border-gray-100 dark:border-slate-700">Registro</th>
+                                            <th className="p-5 border-b border-gray-100 dark:border-slate-700 text-right">Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                                         {paginatedUsers.map(user => (
-                                            <tr key={user.id} className="hover:bg-indigo-50/30 transition-colors group">
+                                            <tr key={user.id} className="hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors group">
                                                 <td className="p-5">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm
@@ -986,8 +986,8 @@ const AdminDashboard: React.FC = () => {
                                                             {user.apellido ? user.apellido.charAt(0) : ''}
                                                         </div>
                                                         <div>
-                                                            <div className="font-semibold text-gray-900">{user.nombre} {user.apellido}</div>
-                                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                                            <div className="font-semibold text-gray-900 dark:text-white">{user.nombre} {user.apellido}</div>
+                                                            <div className="text-sm text-gray-500 dark:text-slate-400">{user.email}</div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -1002,12 +1002,12 @@ const AdminDashboard: React.FC = () => {
                                                 <td className="p-5">
                                                     <div className="flex items-center gap-2">
                                                         <span className={`w-2.5 h-2.5 rounded-full ${user.estado ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                        <span className={`text-sm font-medium ${user.estado ? 'text-gray-700' : 'text-gray-500'}`}>
+                                                        <span className={`text-sm font-medium ${user.estado ? 'text-gray-700 dark:text-slate-300' : 'text-gray-500 dark:text-slate-500'}`}>
                                                             {user.estado ? 'Activo' : 'Inactivo'}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="p-5 text-sm text-gray-500">
+                                                <td className="p-5 text-sm text-gray-500 dark:text-slate-400">
                                                     {user.fechaRegistro ? new Date(user.fechaRegistro).toLocaleDateString('es-ES', {
                                                         day: '2-digit', month: 'short', year: 'numeric'
                                                     }) : '-'}
@@ -1046,9 +1046,9 @@ const AdminDashboard: React.FC = () => {
                                 </table>
                             </div>{/* end desktop table */}
 
-                            {/* Barra de paginación siempre visible */}
-                            <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/30">
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                            {/* Barra de paginacion siempre visible */}
+                            <div className="p-4 border-t border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/30 dark:bg-slate-700/20">
+                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
                                     <span>Mostrar</span>
                                     <div className="relative">
                                         <button
@@ -1061,7 +1061,7 @@ const AdminDashboard: React.FC = () => {
                                                 }
                                                 setPerPageOpen(o => !o);
                                             }}
-                                            className="flex items-center gap-1.5 px-3 h-8 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:border-indigo-400 hover:text-indigo-700 transition-colors shadow-sm"
+                                            className="flex items-center gap-1.5 px-3 h-8 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-700 transition-colors shadow-sm"
                                         >
                                             {itemsPerPage}
                                             <ChevronDown size={12} className={`text-gray-400 transition-transform ${perPageOpen ? 'rotate-180' : ''}`} />
@@ -1078,14 +1078,14 @@ const AdminDashboard: React.FC = () => {
                                                         minWidth: Math.max(perPagePos.width, 120),
                                                         zIndex: 99999
                                                     }}
-                                                    className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                                                    className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl shadow-2xl overflow-hidden"
                                                 >
                                                     {[5, 10, 15, 20].map(n => (
                                                         <button
                                                             key={n}
                                                             type="button"
                                                             onClick={() => { setItemsPerPage(n); setPerPageOpen(false); }}
-                                                            className={`w-full px-4 py-2 text-xs text-left font-medium transition-colors hover:bg-indigo-50 ${itemsPerPage === n ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-700'}`}
+                                                            className={`w-full px-4 py-2 text-xs text-left font-medium transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/30 ${itemsPerPage === n ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 font-bold' : 'text-gray-700 dark:text-slate-300'}`}
                                                         >
                                                             {n}
                                                         </button>
@@ -1099,8 +1099,8 @@ const AdminDashboard: React.FC = () => {
 
                                 {totalPages > 1 && (
                                     <div className="flex items-center gap-2">
-                                        <span className="text-sm text-gray-500">
-                                            Pág. <span className="font-semibold text-gray-900">{currentPage}</span> / <span className="font-semibold text-gray-900">{totalPages}</span>
+                                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                                            Pag. <span className="font-semibold text-gray-900 dark:text-white">{currentPage}</span> / <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
                                         </span>
                                         <button
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -1117,7 +1117,7 @@ const AdminDashboard: React.FC = () => {
                                                         <button
                                                             key={page}
                                                             onClick={() => setCurrentPage(page)}
-                                                            className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${currentPage === page ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 border border-transparent hover:border-gray-200 hover:bg-white'}`}
+                                                            className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${currentPage === page ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 dark:text-slate-300 border border-transparent hover:border-gray-200 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-700'}`}
                                                         >
                                                             {page}
                                                         </button>
