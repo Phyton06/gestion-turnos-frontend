@@ -5,16 +5,15 @@ import Dashboard from './pages/Dashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ThemeProvider } from './context/ThemeContext';
 import axios from 'axios';
 
-// Configurar URL base y evitar filtrado de rutas fijas
+// Configurar URL base
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
-// Configurar Interceptor Global de Axios para la Seguridad de la API (JWT)
+// Interceptor global: adjuntar JWT a cada peticion autenticada
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  // Evitar enviar el token anterior (que era una simple variable "session-activa") en Authorization
-  // Ahora usaremos el verdadero JWT devuelto por el Backend.
   if (token && token !== 'session-activa') {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -25,34 +24,36 @@ axios.interceptors.request.use((config) => {
 
 function App() {
   return (
-    <MemoryRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <ThemeProvider>
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Dashboard de Pacientes (Rol 3) */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute allowedRoles={[3]}>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
+          {/* Dashboard de Pacientes (Rol 3) */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute allowedRoles={[3]}>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
 
-        {/* Dashboard de Médicos (Rol 2) */}
-        <Route path="/doctor-dashboard" element={
-          <ProtectedRoute allowedRoles={[2]}>
-            <DoctorDashboard />
-          </ProtectedRoute>
-        } />
+          {/* Dashboard de Medicos (Rol 2) */}
+          <Route path="/doctor-dashboard" element={
+            <ProtectedRoute allowedRoles={[2]}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          } />
 
-        {/* Dashboard de Admin (Rol 1) */}
-        <Route path="/admin-dashboard" element={
-          <ProtectedRoute allowedRoles={[1]}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
-      </Routes>
-    </MemoryRouter>
+          {/* Dashboard de Admin (Rol 1) */}
+          <Route path="/admin-dashboard" element={
+            <ProtectedRoute allowedRoles={[1]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </MemoryRouter>
+    </ThemeProvider>
   );
 }
 

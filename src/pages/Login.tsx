@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield } from 'lucide-react';
+import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield, Sun, Moon } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { saveSession, isSessionValid, getStoredUser } from '../utils/auth';
+import { useTheme } from '../context/ThemeContext';
 
 const Login: React.FC = () => {
+  const { isDark, toggleTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -154,7 +156,15 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-gray-50">
+    <div className="min-h-screen w-full flex bg-gray-50 dark:bg-slate-900 relative">
+      {/* Boton toggle de tema */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 z-50 p-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm transition-all"
+        title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      >
+        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
 
       {/* Lado izquierdo: Imagen/Banner decorativo */}
       <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 relative overflow-hidden items-center justify-center">
@@ -180,15 +190,15 @@ const Login: React.FC = () => {
       </div>
 
       {/* Lado derecho: Formulario */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 transition-all duration-500">
-        <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-2xl shadow-xl lg:shadow-none border border-gray-100 lg:border-none">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 transition-all duration-500 dark:bg-slate-900">
+        <div className="w-full max-w-md space-y-8 bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-xl lg:shadow-none border border-gray-100 dark:border-slate-700 lg:border-none">
 
           <div className="text-center lg:text-left">
-            <div className="inline-flex lg:hidden justify-center items-center w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 mb-6 shadow-inner border border-indigo-100">
+            <div className="inline-flex lg:hidden justify-center items-center w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 mb-6 shadow-inner border border-indigo-100 dark:border-indigo-800">
               <Stethoscope size={28} />
             </div>
-            <h2 className="text-4xl font-black text-gray-900 tracking-tight">Bienvenido de nuevo</h2>
-            <p className="mt-2 font-medium text-gray-500">Ingresa tus credenciales para acceder al panel.</p>
+            <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Bienvenido de nuevo</h2>
+            <p className="mt-2 font-medium text-gray-500 dark:text-slate-400">Ingresa tus credenciales para acceder al panel.</p>
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleLogin}>
@@ -205,12 +215,12 @@ const Login: React.FC = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 sm:text-sm transition-all shadow-sm
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg leading-5 bg-white dark:bg-slate-700 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all shadow-sm
                     ${emailValid === false
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-200 dark:border-red-500'
                       : emailValid === true
-                        ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
-                        : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 hover:border-gray-400'
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-200 dark:border-green-500'
+                        : 'border-gray-300 dark:border-slate-600 focus:border-indigo-500 focus:ring-indigo-500 hover:border-gray-400'
                     }
                   `}
                   placeholder="Correo electrónico"
@@ -238,10 +248,10 @@ const Login: React.FC = () => {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 sm:text-sm transition-all shadow-sm
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg leading-5 bg-white dark:bg-slate-700 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all shadow-sm
                     ${passwordValid === false
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 hover:border-gray-400'
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-200 dark:border-red-500'
+                      : 'border-gray-300 dark:border-slate-600 focus:border-indigo-500 focus:ring-indigo-500 hover:border-gray-400'
                     }
                   `}
                   placeholder="Contraseña"
@@ -327,8 +337,8 @@ const Login: React.FC = () => {
               {/* Mensaje de feedback */}
               {resetMessage && (
                 <div className={`mb-4 p-3 rounded-lg text-sm flex items-start gap-2 ${resetMessage.includes('Error') || resetMessage.includes('incorrecto') || resetMessage.includes('expirado')
-                    ? 'bg-red-50 text-red-700 border border-red-200'
-                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  ? 'bg-red-50 text-red-700 border border-red-200'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   }`}>
                   <Shield size={16} className="flex-shrink-0 mt-0.5" />
                   <span>{resetMessage}</span>
@@ -538,21 +548,21 @@ const Login: React.FC = () => {
       {/* Overlay de Carga 5s (Nueva solicitud) */}
       {
         redirecting && (
-          <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
             <div className="relative mb-8">
-              <div className="w-24 h-24 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="w-24 h-24 border-4 border-indigo-100 dark:border-slate-700 border-t-indigo-600 rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <Activity size={32} className="text-indigo-600 animate-pulse" />
               </div>
             </div>
 
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">¡Bienvenid@ {welcomeName}!</h2>
-            <p className="text-gray-500 max-w-xs mx-auto mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">¡Bienvenid@ {welcomeName}!</h2>
+            <p className="text-gray-500 dark:text-slate-400 max-w-xs mx-auto mb-8">
               Gracias por usar los servicios de gestión de citas. Estamos preparando tu panel personalizado...
             </p>
 
             {/* Barra de progreso simulada */}
-            <div className="w-full max-w-xs bg-gray-100 h-2 rounded-full overflow-hidden">
+            <div className="w-full max-w-xs bg-gray-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
               <div className="bg-indigo-600 h-full animate-[progress_8s_linear_forwards]"></div>
             </div>
 

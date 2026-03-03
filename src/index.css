@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
+/* Tailwind v4: clase 'dark' en el elemento raiz controla el modo oscuro */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  
-  /* Forzamos modo claro por defecto para limpieza médica */
-  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,5 +17,20 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #f3f4f6; /* Gris muy suave */
+  background-color: #f3f4f6;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Modo oscuro: fondo base del body */
+html.dark body {
+  background-color: #0f172a;
+}
+
+/* Transicion suave en todos los elementos durante cambio de tema */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease;
+  transition-duration: 150ms;
 }
