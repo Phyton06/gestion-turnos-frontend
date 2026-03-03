@@ -516,45 +516,51 @@ const DoctorDashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Navbar Médico (Premium) */}
-            <nav className="bg-white shadow-md shadow-emerald-900/5 px-8 py-5 flex justify-between items-center relative z-10">
-                <div className="flex items-center gap-4 border-l-4 border-emerald-500 pl-4">
-                    <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600 shadow-inner">
-                        <Activity size={32} />
+            {/* Navbar Médico - Responsive */}
+            <nav className="bg-white shadow-md shadow-emerald-900/5 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-2 sm:gap-4 border-l-4 border-emerald-500 pl-3 sm:pl-4">
+                    <div className="bg-emerald-50 p-2 sm:p-3 rounded-2xl text-emerald-600 shadow-inner">
+                        <Activity size={24} className="sm:hidden" />
+                        <Activity size={32} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">
-                            Bienvenido, <span className="text-emerald-600">
+                        <h1 className="text-base sm:text-2xl font-black text-gray-900 tracking-tight leading-none mb-0.5">
+                            <span className="hidden sm:inline">Bienvenido, </span>
+                            <span className="text-emerald-600">
                                 {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).nombre : medicoInfo.nombre}
                             </span>
                         </h1>
-                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">
+                        <p className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-widest hidden sm:block">
                             {medicoInfo.especialidad || 'Especialista'} | Portal Médico
+                        </p>
+                        <p className="text-xs font-bold text-emerald-600 sm:hidden">
+                            {medicoInfo.especialidad || 'Portal Médico'}
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-sm font-bold border border-gray-100 shadow-sm active:scale-95"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all text-xs sm:text-sm font-bold border border-gray-100 shadow-sm active:scale-95"
                 >
-                    <LogOut size={18} />
-                    Cerrar Sesión
+                    <LogOut size={16} />
+                    <span className="hidden sm:inline">Cerrar Sesión</span>
+                    <span className="sm:hidden">Salir</span>
                 </button>
             </nav>
 
-            <div className="flex-1 container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="flex-1 container mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 
                 {/* Columna Izquierda: Resumen del Día */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
-                    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                         <div>
-                            <h2 className="text-3xl font-black text-gray-900 tracking-tight">Agenda de Consultas</h2>
-                            <p className="text-gray-500 font-medium mt-1">
+                            <h2 className="text-xl sm:text-3xl font-black text-gray-900 tracking-tight">Agenda de Consultas</h2>
+                            <p className="text-gray-500 font-medium mt-1 text-sm sm:text-base">
                                 Administra tus pacientes para la fecha seleccionada.
                             </p>
                         </div>
-                        <div className="relative group w-full md:w-auto mt-4 md:mt-0">
+                        <div className="relative group w-full sm:w-auto mt-0">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                                 <Calendar className="h-5 w-5 text-emerald-500 group-hover:text-emerald-600 transition-colors" />
                             </div>
@@ -611,7 +617,7 @@ const DoctorDashboard: React.FC = () => {
                                     return (
                                         <>
                                             {displayedCitas.map((cita) => (
-                                                <div key={cita.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                                                <div key={cita.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-gray-50 transition-colors group">
                                                     <div className="flex items-center gap-4">
                                                         <div className={`p-3 rounded-full ${cita.estado === 'completado' ? 'bg-gray-100 text-gray-400' :
                                                             cita.estado === 'cancelado' || cita.estado === 'no_asistio' ? 'bg-red-50 text-red-400' :
@@ -635,26 +641,26 @@ const DoctorDashboard: React.FC = () => {
                                                     </div>
 
                                                     {cita.estado === 'activo' && (
-                                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                                        <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                                                             <button
                                                                 onClick={() => cancelarCita(cita)}
-                                                                className="px-4 py-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-black hover:bg-orange-100 transition-all active:scale-95 flex items-center justify-center border border-orange-100"
+                                                                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-black hover:bg-orange-100 transition-all active:scale-95 flex items-center justify-center border border-orange-100"
                                                                 title="Cancelar Cita"
                                                             >
-                                                                <CalendarX2 size={20} />
+                                                                <CalendarX2 size={18} />
                                                             </button>
                                                             <button
                                                                 onClick={() => marcarInasistencia(cita)}
-                                                                className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-black hover:bg-red-100 transition-all active:scale-95 flex items-center justify-center border border-red-100"
+                                                                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-red-50 text-red-600 rounded-xl text-sm font-black hover:bg-red-100 transition-all active:scale-95 flex items-center justify-center border border-red-100"
                                                                 title="No asistió"
                                                             >
-                                                                <User size={20} />
+                                                                <User size={18} />
                                                             </button>
                                                             <button
                                                                 onClick={() => completarCita(cita)}
-                                                                className="px-6 py-3 bg-emerald-600 text-white rounded-xl text-sm font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
+                                                                className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 text-white rounded-xl text-sm font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
                                                             >
-                                                                Paciente Atendido
+                                                                Atendido
                                                             </button>
                                                         </div>
                                                     )}
@@ -691,13 +697,13 @@ const DoctorDashboard: React.FC = () => {
                 </div>
 
                 {/* Columna Derecha: Estadísticas Rápidas */}
-                <div className="space-y-6">
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden">
+                <div className="space-y-4 sm:space-y-6">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                             <Activity size={120} />
                         </div>
                         <h3 className="font-black text-emerald-100 mb-1 text-sm uppercase tracking-widest flex items-center gap-2"><Calendar size={14} /> Estadísticas de hoy</h3>
-                        <div className="text-6xl font-black mb-6 tracking-tighter">
+                        <div className="text-4xl sm:text-6xl font-black mb-4 sm:mb-6 tracking-tighter">
                             {citas.filter(c => c.fecha === formattedSelectedDate && c.estado !== 'cancelado').length}
                         </div>
                         <div className="flex flex-col gap-2 text-sm font-bold">
