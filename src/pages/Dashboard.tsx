@@ -200,7 +200,11 @@ const Dashboard: React.FC = () => {
         setDisponibilidad([]);
         try {
             const fechaStr = date.toISOString().split('T')[0];
-            const response = await axios.get(`/availability?fecha=${fechaStr}&especialidadId=${selectedEspecialidad}&pacienteId=${userId}`);
+            // Enviamos el offset del navegador (en minutos) para que el servidor
+            // pueda calcular la hora local del usuario correctamente, sin importar
+            // el timezone del servidor en producción (Render = UTC+0).
+            const utcOffset = new Date().getTimezoneOffset();
+            const response = await axios.get(`/availability?fecha=${fechaStr}&especialidadId=${selectedEspecialidad}&pacienteId=${userId}&utcOffset=${utcOffset}`);
             if (response.data.success) {
                 const todos = response.data.data as MedicoAvailability[];
                 const filtrados = todos.filter(g => g.medico.id === selectedMedico);
