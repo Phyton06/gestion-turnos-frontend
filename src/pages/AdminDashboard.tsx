@@ -706,7 +706,7 @@ const AdminDashboard: React.FC = () => {
                             {Number(formData.idRol) === 2 && (
                                 <>
                                     <div className="animate-fade-in">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Especialidad</label>
                                         <select
                                             name="idEspecialidad"
                                             value={formData.idEspecialidad}
@@ -714,7 +714,7 @@ const AdminDashboard: React.FC = () => {
                                                 handleInputChange(e);
                                                 setShowNewSpecialty(e.target.value === '-1');
                                             }}
-                                            className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white transition-all cursor-pointer"
+                                            className="w-full border border-gray-300 dark:border-slate-600 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white dark:bg-slate-700 dark:text-white transition-all cursor-pointer"
                                         >
                                             {specialties.map(esp => (
                                                 <option key={esp.id} value={esp.id}>{esp.nombre}</option>
@@ -725,36 +725,36 @@ const AdminDashboard: React.FC = () => {
 
                                     {showNewSpecialty && (
                                         <div className="animate-fade-in">
-                                            <label className="block text-sm font-medium text-indigo-700 mb-1">Nombre de la Nueva Especialidad</label>
+                                            <label className="block text-sm font-medium text-indigo-700 dark:text-indigo-400 mb-1">Nombre de la Nueva Especialidad</label>
                                             <input
                                                 type="text"
                                                 placeholder="Ej: Cirugía General"
                                                 value={newSpecialtyName}
                                                 onChange={(e) => setNewSpecialtyName(e.target.value)}
                                                 required={Number(formData.idEspecialidad) === -1}
-                                                className="w-full border border-indigo-300 bg-indigo-50 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                                className="w-full border border-indigo-300 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white dark:placeholder-slate-500"
                                             />
                                         </div>
                                     )}
 
                                     <div className="animate-fade-in">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Cédula Profesional</label>
-                                        <input name="cedulaProfesional" placeholder="Ej: MED12345" value={formData.cedulaProfesional} onChange={handleCedulaChange} required={Number(formData.idRol) === 2 && !editUserId} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Cédula Profesional</label>
+                                        <input name="cedulaProfesional" placeholder="Ej: MED12345" value={formData.cedulaProfesional} onChange={handleCedulaChange} required={Number(formData.idRol) === 2 && !editUserId} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder-slate-500" />
                                     </div>
 
                                     {/* Configuración de Agenda (Sólo en Creación) */}
                                     {!editUserId && (
                                         <>
-                                            <div className="animate-fade-in md:col-span-2 lg:col-span-3 mt-4 border-t border-gray-100 pt-4">
+                                            <div className="animate-fade-in md:col-span-2 lg:col-span-3 mt-4 border-t border-gray-100 dark:border-slate-700 pt-4">
                                                 <div className="flex justify-between items-center mb-4">
-                                                    <h4 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Configuración de Agenda del Médico</h4>
+                                                    <h4 className="font-bold text-gray-800 dark:text-slate-200 text-sm uppercase tracking-wide">Configuración de Agenda del Médico</h4>
                                                     <label className="flex items-center cursor-pointer">
                                                         <div className="relative">
                                                             <input type="checkbox" className="sr-only" name="isHorarioQuebrado" checked={formData.isHorarioQuebrado} onChange={handleInputChange} />
-                                                            <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isHorarioQuebrado ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
+                                                            <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isHorarioQuebrado ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-slate-600'}`}></div>
                                                             <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.isHorarioQuebrado ? 'transform translate-x-4' : ''}`}></div>
                                                         </div>
-                                                        <div className="ml-3 text-sm font-medium text-gray-700">Horario Quebrado (Por Día)</div>
+                                                        <div className="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300">Horario Quebrado (Por Día)</div>
                                                     </label>
                                                 </div>
 
@@ -762,29 +762,29 @@ const AdminDashboard: React.FC = () => {
                                                     {!formData.isHorarioQuebrado ? (
                                                         <div className="flex gap-4">
                                                             <div className="flex-1">
-                                                                <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Entrada (24h)</label>
-                                                                <input type="number" name="horaInicio" min="0" max="23" value={formData.horaInicio} onChange={handleInputChange} className="w-full border border-gray-300 p-2.5 rounded-lg text-center" />
+                                                                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1">Hora de Entrada (24h)</label>
+                                                                <input type="number" name="horaInicio" min="0" max="23" value={formData.horaInicio} onChange={handleInputChange} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg text-center focus:ring-2 focus:ring-indigo-500" />
                                                             </div>
                                                             <div className="flex-1">
-                                                                <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Salida (24h)</label>
-                                                                <input type="number" name="horaFin" min="1" max="24" value={formData.horaFin} onChange={handleInputChange} className="w-full border border-gray-300 p-2.5 rounded-lg text-center" />
+                                                                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1">Hora de Salida (24h)</label>
+                                                                <input type="number" name="horaFin" min="1" max="24" value={formData.horaFin} onChange={handleInputChange} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg text-center focus:ring-2 focus:ring-indigo-500" />
                                                             </div>
                                                         </div>
                                                     ) : (
                                                         <div className="col-span-1 md:col-span-2 space-y-3">
-                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Horario Específico por Día</label>
+                                                            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1">Horario Específico por Día</label>
                                                             {[
                                                                 { id: 1, label: 'Lunes' }, { id: 2, label: 'Martes' }, { id: 3, label: 'Miércoles' },
                                                                 { id: 4, label: 'Jueves' }, { id: 5, label: 'Viernes' }, { id: 6, label: 'Sábado' }, { id: 0, label: 'Domingo' }
                                                             ].filter(d => !formData.diasDescanso.includes(d.id)).map(diaObj => {
                                                                 const h = formData.horariosPorDia.find(hd => hd.dia === diaObj.id)!;
                                                                 return (
-                                                                    <div key={diaObj.id} className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                                                                        <div className="w-24 font-medium text-sm text-gray-700">{diaObj.label}</div>
+                                                                    <div key={diaObj.id} className="flex items-center gap-4 bg-gray-50 dark:bg-slate-700/50 p-2 rounded-lg border border-gray-100 dark:border-slate-600">
+                                                                        <div className="w-24 font-medium text-sm text-gray-700 dark:text-slate-300">{diaObj.label}</div>
                                                                         <div className="flex-1 flex gap-2">
-                                                                            <input type="number" min="0" max="23" value={h.horaInicio} onChange={(e) => handleHorarioPorDiaChange(diaObj.id, 'horaInicio', e.target.value)} className="w-full border border-gray-300 p-2 rounded-lg text-center text-sm" placeholder="Entrada" />
-                                                                            <span className="text-gray-400 self-center">-</span>
-                                                                            <input type="number" min="1" max="24" value={h.horaFin} onChange={(e) => handleHorarioPorDiaChange(diaObj.id, 'horaFin', e.target.value)} className="w-full border border-gray-300 p-2 rounded-lg text-center text-sm" placeholder="Salida" />
+                                                                            <input type="number" min="0" max="23" value={h.horaInicio} onChange={(e) => handleHorarioPorDiaChange(diaObj.id, 'horaInicio', e.target.value)} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2 rounded-lg text-center text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Entrada" />
+                                                                            <span className="text-gray-400 dark:text-slate-500 self-center">-</span>
+                                                                            <input type="number" min="1" max="24" value={h.horaFin} onChange={(e) => handleHorarioPorDiaChange(diaObj.id, 'horaFin', e.target.value)} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2 rounded-lg text-center text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Salida" />
                                                                         </div>
                                                                     </div>
                                                                 );
@@ -802,7 +802,7 @@ const AdminDashboard: React.FC = () => {
                                                                 <button
                                                                     key={d.id} type="button"
                                                                     onClick={() => handleDayToggle(d.id)}
-                                                                    className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${formData.diasDescanso.includes(d.id) ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                                    className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${formData.diasDescanso.includes(d.id) ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'}`}
                                                                 >
                                                                     {d.label}
                                                                 </button>
@@ -811,7 +811,7 @@ const AdminDashboard: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="md:col-span-2 lg:col-span-3 bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-700 animate-fade-in flex items-center gap-2 mt-2">
+                                            <div className="md:col-span-2 lg:col-span-3 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 text-sm text-blue-700 dark:text-blue-400 animate-fade-in flex items-center gap-2 mt-2">
                                                 <span className="font-bold">Nota:</span> Al registrar este médico, el sistema generará automáticamente su agenda inicial basándose en esta configuración de horario.
                                             </div>
                                         </>
@@ -819,7 +819,7 @@ const AdminDashboard: React.FC = () => {
                                 </>
                             )}
                             <div className="md:col-span-2 lg:col-span-3 flex justify-end mt-2">
-                                <button type="button" onClick={resetForm} className="mr-3 px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                                <button type="button" onClick={resetForm} className="mr-3 px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors font-medium">Cancelar</button>
                                 <button type="submit" className="bg-indigo-600 text-white px-8 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg font-medium">
                                     {editUserId ? 'Guardar Cambios' : 'Registrar Usuario'}
                                 </button>
@@ -872,7 +872,7 @@ const AdminDashboard: React.FC = () => {
                                         locale={es}
                                         placeholderText="Filtrar por fecha..."
                                         isClearable={false} // Avoid double clear buttons, we have the global one
-                                        className="py-2.5 pl-9 pr-3 text-sm bg-white border border-gray-200 rounded-lg outline-none shadow-sm cursor-pointer w-full md:w-36 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="py-2.5 pl-9 pr-3 text-sm bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-lg outline-none shadow-sm cursor-pointer w-full md:w-36 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:[color-scheme:dark]"
                                     />
                                 </div>
 
@@ -1105,7 +1105,7 @@ const AdminDashboard: React.FC = () => {
                                         <button
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="p-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-white hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                            className="p-1.5 rounded-md border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                         >
                                             <ChevronLeft size={18} />
                                         </button>
@@ -1132,7 +1132,7 @@ const AdminDashboard: React.FC = () => {
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="p-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-white hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                            className="p-1.5 rounded-md border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                         >
                                             <ChevronRight size={18} />
                                         </button>
