@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield, Sun, Moon } from 'lucide-react';
+import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield, Sun, Moon, Eye, EyeOff } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { saveSession, isSessionValid, getStoredUser } from '../utils/auth';
 import { useTheme } from '../context/ThemeContext';
@@ -15,6 +15,7 @@ const Login: React.FC = () => {
   // Estados de validación dinámica
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [passwordValid, setPasswordValid] = useState<boolean | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [redirecting, setRedirecting] = useState(false);
   const [welcomeName, setWelcomeName] = useState('');
 
@@ -245,7 +246,7 @@ const Login: React.FC = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
                   className={`block w-full pl-10 pr-10 py-3 border rounded-lg leading-5 bg-white dark:bg-slate-700 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all shadow-sm
@@ -258,6 +259,18 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={handlePasswordChange}
                 />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors focus:outline-none"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword
+                    ? <EyeOff className="h-5 w-5" />
+                    : <Eye className="h-5 w-5" />
+                  }
+                </button>
               </div>
               {passwordValid === false && (
                 <p className="text-xs text-red-500 ml-1">La contraseña debe tener al menos 6 caracteres.</p>
