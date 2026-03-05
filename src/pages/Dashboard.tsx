@@ -330,10 +330,10 @@ const Dashboard: React.FC = () => {
                     disabled={isDisabled}
                     onClick={() => handleDateSelect(date)}
                     className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all relative
-                        ${isSelected ? 'bg-blue-600 text-white shadow-lg scale-110' : 'hover:bg-blue-100 text-gray-700'}
+                        ${isSelected ? 'bg-blue-600 text-white shadow-lg scale-110' : 'hover:bg-blue-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300'}
                         ${isToday ? 'border-2 border-blue-400' : ''}
-                        ${isDisabled ? 'opacity-30 cursor-not-allowed bg-gray-50' : ''}
-                        ${isFull && !isDisabled ? 'bg-red-50 text-red-500 hover:bg-red-100' : ''}
+                        ${isDisabled ? 'opacity-30 cursor-not-allowed bg-gray-50 dark:bg-slate-800/50' : ''}
+                        ${isFull && !isDisabled ? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40' : ''}
                     `}
                 >
                     {i}
@@ -763,24 +763,24 @@ const Dashboard: React.FC = () => {
                                                 onClick={() => setSelectedMedico(med.id)}
                                                 className={`p-6 rounded-3xl border-2 text-left transition-all flex items-center gap-4
                                                     ${selectedMedico === med.id
-                                                        ? 'border-blue-600 bg-blue-50/50 shadow-md ring-1 ring-blue-600'
-                                                        : 'border-gray-50 hover:border-blue-200 hover:bg-gray-50'}
+                                                        ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-md ring-1 ring-blue-600'
+                                                        : 'border-gray-50 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-gray-50 dark:hover:bg-slate-700/50'}
                                                 `}
                                             >
                                                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black
-                                                    ${selectedMedico === med.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-300'}
+                                                    ${selectedMedico === med.id ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-300 dark:text-slate-500'}
                                                 `}>
                                                     {med.nombre.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-black text-gray-900 leading-none mb-1">{med.nombre}</h4>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{med.especialidad}</p>
+                                                    <h4 className="font-black text-gray-900 dark:text-white leading-none mb-1">{med.nombre}</h4>
+                                                    <p className="text-[10px] text-gray-400 dark:text-slate-400 font-bold uppercase tracking-widest">{med.especialidad}</p>
                                                 </div>
                                             </button>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-center py-10 text-gray-400 font-medium">No hay médicos activos para esta especialidad.</p>
+                                    <p className="text-center py-10 text-gray-400 dark:text-slate-500 font-medium">No hay médicos activos para esta especialidad.</p>
                                 )}
                             </section>
 
@@ -810,16 +810,16 @@ const Dashboard: React.FC = () => {
 
                             {/* Paso 4: Disponibilidad */}
                             {selectedDate && selectedMedico && (
-                                <section className="bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 animate-in slide-in-from-bottom duration-700">
+                                <section className="bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 animate-in slide-in-from-bottom duration-700">
                                     <div className="flex items-center gap-3 mb-6 sm:mb-10">
-                                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-black text-sm sm:text-base">4</div>
-                                        <h3 className="text-base sm:text-xl font-black text-gray-900 tracking-tight">Horarios Disponibles</h3>
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center font-black text-sm sm:text-base">4</div>
+                                        <h3 className="text-base sm:text-xl font-black text-gray-900 dark:text-white tracking-tight">Horarios Disponibles</h3>
                                     </div>
 
                                     {loading ? (
                                         <div className="py-20 flex flex-col items-center gap-4">
-                                            <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-                                            <p className="text-gray-500 font-bold">Consultando agenda...</p>
+                                            <div className="w-12 h-12 border-4 border-blue-100 dark:border-blue-900/30 border-t-blue-600 rounded-full animate-spin"></div>
+                                            <p className="text-gray-500 dark:text-slate-400 font-bold">Consultando agenda...</p>
                                         </div>
                                     ) : disponibilidad.length > 0 ? (
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
@@ -885,8 +885,8 @@ const Dashboard: React.FC = () => {
                                                         onClick={() => handleReservar(disponibilidad[0].medico.id, slot.id, slot.horaInicio)}
                                                         className={`py-4 rounded-2xl font-black text-sm border transition-all active:scale-95 flex flex-col items-center justify-center gap-1
                                                                 ${isDisabled
-                                                                ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed opacity-60'
-                                                                : 'bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 border-blue-100 hover:border-blue-200 shadow-sm'}
+                                                                ? 'bg-gray-50 dark:bg-slate-700/50 text-gray-400 dark:text-slate-500 border-gray-100 dark:border-slate-600 cursor-not-allowed opacity-60'
+                                                                : 'bg-white dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border-blue-100 dark:border-blue-800 hover:border-blue-200 dark:hover:border-blue-700 shadow-sm'}
                                                             `}
                                                     >
                                                         <span>{slot.horaInicio}</span>
@@ -896,7 +896,7 @@ const Dashboard: React.FC = () => {
                                                             </span>
                                                         )}
                                                         {isPastTime && !hasConflict && (
-                                                            <span className="text-[7px] uppercase tracking-tighter opacity-100 bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full ring-1 ring-gray-300 mt-1">
+                                                            <span className="text-[7px] uppercase tracking-tighter opacity-100 bg-gray-200 dark:bg-slate-600 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded-full ring-1 ring-gray-300 dark:ring-slate-500 mt-1">
                                                                 No disponible
                                                             </span>
                                                         )}
@@ -905,7 +905,7 @@ const Dashboard: React.FC = () => {
                                             })}
                                         </div>
                                     ) : (
-                                        <div className="bg-gray-50 border border-gray-100 p-10 rounded-2xl text-center text-gray-500 font-medium">No hay turnos para esta fecha.</div>
+                                        <div className="bg-gray-50 dark:bg-slate-700/30 border border-gray-100 dark:border-slate-700 p-10 rounded-2xl text-center text-gray-500 dark:text-slate-400 font-medium">No hay turnos para esta fecha.</div>
                                     )}
                                 </section>
                             )}
@@ -921,7 +921,7 @@ const Dashboard: React.FC = () => {
                         className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300"
                         onClick={() => setShowConfirmModal(false)}
                     />
-                    <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-gray-100">
+                    <div className="relative bg-white dark:bg-slate-800 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-gray-100 dark:border-slate-700">
                         {/* Header Decorativo */}
                         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-10 text-center relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
@@ -936,13 +936,13 @@ const Dashboard: React.FC = () => {
 
                         <div className="p-10 space-y-8">
                             {/* Card del Médico */}
-                            <div className="flex items-center gap-5 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                            <div className="flex items-center gap-5 p-6 bg-gray-50 dark:bg-slate-700/50 rounded-3xl border border-gray-100 dark:border-slate-600">
                                 <div className="w-16 h-16 bg-blue-600 rounded-[1.25rem] flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
                                     {(medicos.find(m => m.id === pendingBooking.medicoId)?.nombre || 'M').charAt(0)}
                                 </div>
                                 <div>
                                     <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mb-1">Especialista Asignado</p>
-                                    <h3 className="text-lg font-black text-gray-900 leading-tight">
+                                    <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
                                         {medicos.find(m => m.id === pendingBooking.medicoId)?.nombre}
                                     </h3>
                                     <p className="text-sm text-gray-500 font-bold italic">
@@ -953,28 +953,28 @@ const Dashboard: React.FC = () => {
 
                             {/* Detalles de Fecha y Hora */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-2">
-                                    <div className="flex items-center gap-2 text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                                <div className="p-5 bg-white dark:bg-slate-700 rounded-3xl border border-gray-100 dark:border-slate-600 shadow-sm flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-gray-400 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest">
                                         <CalendarIcon size={14} className="text-blue-500" />
                                         <span>Fecha</span>
                                     </div>
-                                    <p className="text-gray-900 font-black capitalize">
+                                    <p className="text-gray-900 dark:text-white font-black capitalize">
                                         {selectedDate?.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}
                                     </p>
                                 </div>
-                                <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-2">
-                                    <div className="flex items-center gap-2 text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                                <div className="p-5 bg-white dark:bg-slate-700 rounded-3xl border border-gray-100 dark:border-slate-600 shadow-sm flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-gray-400 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest">
                                         <Clock size={14} className="text-blue-500" />
                                         <span>Horario</span>
                                     </div>
-                                    <p className="text-gray-900 font-black">{pendingBooking.hora}</p>
+                                    <p className="text-gray-900 dark:text-white font-black">{pendingBooking.hora}</p>
                                 </div>
                             </div>
 
                             {/* Alerta de Recordatorio */}
-                            <div className="flex gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                            <div className="flex gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-900/30">
                                 <div className="text-amber-500 mt-0.5"><Activity size={16} /></div>
-                                <p className="text-[11px] text-amber-700 font-bold leading-relaxed">
+                                <p className="text-[11px] text-amber-700 dark:text-amber-400 font-bold leading-relaxed">
                                     Recuerda llegar 15 minutos antes de tu cita. Las cancelaciones deben hacerse con 24h de anticipación.
                                 </p>
                             </div>
@@ -984,7 +984,7 @@ const Dashboard: React.FC = () => {
                                 <button
                                     onClick={() => setShowConfirmModal(false)}
                                     disabled={loading}
-                                    className="flex-1 px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50"
+                                    className="flex-1 px-8 py-4 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50"
                                 >
                                     Cancelar
                                 </button>
