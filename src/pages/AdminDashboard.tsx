@@ -81,6 +81,7 @@ const AdminDashboard: React.FC = () => {
         email: '',
         password: '',
         telefono: '',
+        fecha_nacimiento: '',
         idRol: 3, // Default Paciente
         // Campos extra para médicos
         cedulaProfesional: '',
@@ -257,6 +258,7 @@ const AdminDashboard: React.FC = () => {
             email: user.email || '',
             password: '', // Leave empty unless changing
             telefono: user.telefono || '',
+            fecha_nacimiento: (user as any).fechaNacimiento || '',
             idRol: user.idRol,
             cedulaProfesional: '', // Se requerirá una llamada extra si queremos popular esto siempre, pero por practicidad asuminos edición básica
             idEspecialidad: 1,
@@ -279,7 +281,7 @@ const AdminDashboard: React.FC = () => {
 
     const resetForm = () => {
         setFormData({
-            nombre: '', apellido: '', email: '', password: '', telefono: '', idRol: 3,
+            nombre: '', apellido: '', email: '', password: '', telefono: '', fecha_nacimiento: '', idRol: 3,
             cedulaProfesional: '', idEspecialidad: 1, horaInicio: 9, horaFin: 17, diasDescanso: [0, 6],
             isHorarioQuebrado: false,
             horariosPorDia: [
@@ -398,6 +400,7 @@ const AdminDashboard: React.FC = () => {
                     apellido: formData.apellido,
                     email: formData.email,
                     telefono: telefonoFinal,
+                    fechaNacimiento: formData.fecha_nacimiento,
                     idEspecialidad: finalSpecialtyId,
                     cedulaProfesional: formData.cedulaProfesional,
                 };
@@ -425,6 +428,7 @@ const AdminDashboard: React.FC = () => {
                     apellido: formData.apellido,
                     email: formData.email,
                     telefono: telefonoFinal,
+                    fechaNacimiento: formData.fecha_nacimiento,
                     idRol: roleId
                 };
                 if (formData.password) payload.password = formData.password;
@@ -588,19 +592,23 @@ const AdminDashboard: React.FC = () => {
                         <form onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nombre</label>
-                                <input name="nombre" placeholder="Ej: Juan" value={formData.nombre} onChange={handleNameChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <input name="nombre" placeholder="Ej: Juan" value={formData.nombre} onChange={handleNameChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Apellido</label>
-                                <input name="apellido" placeholder="Ej: Perez" value={formData.apellido} onChange={handleNameChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <input name="apellido" placeholder="Ej: Perez" value={formData.apellido} onChange={handleNameChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email</label>
-                                <input name="email" type="email" placeholder="usuario@ejemplo.com" value={formData.email} onChange={handleInputChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <input name="email" type="email" placeholder="usuario@ejemplo.com" value={formData.email} onChange={handleInputChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Contrasena {editUserId && '(Opcional)'}</label>
-                                <input name="password" type="password" placeholder={editUserId ? "Dejar en blanco para no cambiar" : "••••••"} value={formData.password} onChange={handleInputChange} required={!editUserId} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                                <input name="password" type="password" placeholder={editUserId ? "Dejar en blanco para no cambiar" : "••••••"} value={formData.password} onChange={handleInputChange} required={!editUserId} className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Fecha de Nacimiento</label>
+                                <input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange} required className="w-full border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:dark:invert" max={new Date().toISOString().split('T')[0]} />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Telefono</label>
@@ -612,14 +620,14 @@ const AdminDashboard: React.FC = () => {
                                             type="button"
                                             onClick={openCountryDropdown}
                                             disabled={loadingCountries}
-                                            className="flex items-center gap-2 h-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                                            className="flex items-center gap-2 h-full px-3 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-600 focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
                                         >
                                             {loadingCountries ? (
                                                 <span className="text-gray-400 text-xs">...</span>
                                             ) : selectedCountry ? (
                                                 <>
                                                     <span className="text-lg leading-none">{selectedCountry.flag}</span>
-                                                    <span className="font-bold text-indigo-700 text-xs">{selectedCountry.dial}</span>
+                                                    <span className="font-bold text-gray-700 dark:text-slate-300 text-xs">{selectedCountry.dial}</span>
                                                 </>
                                             ) : null}
                                             <ChevronDown size={12} className={`text-gray-400 transition-transform ${countryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -643,7 +651,7 @@ const AdminDashboard: React.FC = () => {
                                                             type="text"
                                                             autoFocus
                                                             placeholder="Buscar país o código..."
-                                                            className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                             value={countrySearch}
                                                             onChange={e => setCountrySearch(e.target.value)}
                                                         />
@@ -659,7 +667,7 @@ const AdminDashboard: React.FC = () => {
                                                             type="button"
                                                             onClick={() => { setSelectedCountry(c); setCountryDropdownOpen(false); setCountrySearch(''); }}
                                                             className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors
-                                                                ${selectedCountry?.code === c.code ? 'bg-indigo-50 dark:bg-indigo-900/30 font-bold text-indigo-700' : 'text-gray-700 dark:text-slate-300'}`}
+                                                                ${selectedCountry?.code === c.code ? 'bg-indigo-50 dark:bg-indigo-900/30 font-bold text-gray-900 dark:text-white' : 'text-gray-700 dark:text-slate-300'}`}
                                                         >
                                                             <span className="text-base leading-none flex-shrink-0">{c.flag}</span>
                                                             <span className="flex-1 truncate">{c.name}</span>
@@ -679,7 +687,7 @@ const AdminDashboard: React.FC = () => {
                                             type="text"
                                             inputMode="numeric"
                                             placeholder="111-111-11-11"
-                                            className="block w-full pl-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono tracking-wider text-sm"
+                                            className="block w-full pl-8 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono tracking-wider text-sm dark:placeholder:text-slate-500"
                                             value={formatPhoneNumber(phoneDigits)}
                                             onChange={handlePhoneDigitsChange}
                                             maxLength={13}

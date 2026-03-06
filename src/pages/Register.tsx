@@ -29,6 +29,7 @@ const Register: React.FC = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        fecha_nacimiento: '',
     });
 
     const [countries, setCountries] = useState<Country[]>([]);
@@ -139,6 +140,7 @@ const Register: React.FC = () => {
                 apellido: formData.apellido,
                 email: formData.email,
                 password: formData.password,
+                fechaNacimiento: formData.fecha_nacimiento,
                 telefono: telefonoFinal
             });
 
@@ -196,7 +198,7 @@ const Register: React.FC = () => {
                                     type="text"
                                     name="nombre"
                                     required
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
                                     placeholder="Juan"
                                     value={formData.nombre}
                                     onChange={handleNameChange}
@@ -215,7 +217,7 @@ const Register: React.FC = () => {
                                     type="text"
                                     name="apellido"
                                     required
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
                                     placeholder="Perez"
                                     value={formData.apellido}
                                     onChange={handleNameChange}
@@ -224,7 +226,7 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Email */}
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-1">
                             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Correo Electronico</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -234,7 +236,7 @@ const Register: React.FC = () => {
                                     type="email"
                                     name="email"
                                     required
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-500"
                                     placeholder="juan.perez@ejemplo.com"
                                     value={formData.email}
                                     onChange={handleChange}
@@ -242,10 +244,24 @@ const Register: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Fecha de Nacimiento */}
+                        <div className="md:col-span-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Fecha de Nacimiento</label>
+                            <input
+                                type="date"
+                                name="fecha_nacimiento"
+                                required
+                                max={new Date().toISOString().split('T')[0]}
+                                className="block w-full px-3 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                                value={formData.fecha_nacimiento}
+                                onChange={handleChange}
+                            />
+                        </div>
+
                         {/* Teléfono con selector de país personalizado */}
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                                Teléfono <span className="text-gray-400 dark:text-slate-500 font-normal">(Opcional)</span>
+                                Teléfono <span className="text-gray-400 font-normal">(Opcional)</span>
                             </label>
                             <div className="flex gap-2">
 
@@ -255,7 +271,7 @@ const Register: React.FC = () => {
                                         type="button"
                                         onClick={() => setDropdownOpen(o => !o)}
                                         disabled={loadingCountries}
-                                        className="flex items-center gap-2 h-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                                        className="flex items-center gap-2 h-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
                                     >
                                         {loadingCountries ? (
                                             <span className="text-gray-400">Cargando...</span>
@@ -270,7 +286,7 @@ const Register: React.FC = () => {
 
                                     {/* Dropdown de países con búsqueda */}
                                     {dropdownOpen && (
-                                        <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                                        <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
                                             {/* Buscar */}
                                             <div className="p-3 border-b border-gray-100 dark:border-slate-700">
                                                 <div className="relative">
@@ -279,7 +295,7 @@ const Register: React.FC = () => {
                                                         type="text"
                                                         autoFocus
                                                         placeholder="Buscar país o código..."
-                                                        className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                         value={search}
                                                         onChange={e => setSearch(e.target.value)}
                                                     />
@@ -298,8 +314,8 @@ const Register: React.FC = () => {
                                                             setDropdownOpen(false);
                                                             setSearch('');
                                                         }}
-                                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors
-                                                            ${selectedCountry?.code === c.code ? 'bg-indigo-50 dark:bg-indigo-900/30 font-bold text-indigo-700' : 'text-gray-700 dark:text-slate-300'}`}
+                                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors
+                                                            ${selectedCountry?.code === c.code ? 'bg-indigo-50 dark:bg-indigo-900/40 font-bold text-gray-900 dark:text-white' : 'text-gray-700 dark:text-slate-300'}`}
                                                     >
                                                         <span className="text-lg leading-none flex-shrink-0">{c.flag}</span>
                                                         <span className="flex-1 truncate">{c.name}</span>
@@ -320,7 +336,7 @@ const Register: React.FC = () => {
                                         type="text"
                                         inputMode="numeric"
                                         name="telefono"
-                                        className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-mono tracking-wider"
+                                        className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-mono tracking-wider dark:placeholder:text-slate-500"
                                         placeholder="111-111-11-11"
                                         value={formatPhoneNumber(phoneDigits)}
                                         onChange={handlePhoneChange}
@@ -352,7 +368,7 @@ const Register: React.FC = () => {
                                     name="password"
                                     required
                                     minLength={6}
-                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors dark:placeholder-slate-500"
                                     placeholder="******"
                                     value={formData.password}
                                     onChange={handleChange}
@@ -372,8 +388,8 @@ const Register: React.FC = () => {
                                     name="confirmPassword"
                                     required
                                     minLength={6}
-                                    className={`block w-full pl-10 py-2.5 border rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:ring-indigo-500 focus:border-indigo-500 transition-colors
-                                        ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-300 dark:border-red-600 focus:border-red-500' : 'border-gray-300 dark:border-slate-600'}
+                                    className={`block w-full pl-10 py-2.5 border rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors dark:bg-slate-700 text-gray-900 dark:text-white
+                                        ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-300 focus:border-red-500 dark:border-red-500/50' : 'border-gray-300 dark:border-slate-600'}
                                     `}
                                     placeholder="******"
                                     value={formData.confirmPassword}
