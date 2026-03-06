@@ -594,7 +594,7 @@ const DoctorDashboard: React.FC = () => {
                                     const day = date.getDay();
                                     return medicoInfo.horariosLaborales.some(h => h.diaSemana === day);
                                 }}
-                                className="block w-full md:w-auto pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none cursor-pointer hover:bg-white selection:bg-emerald-500"
+                                className="block w-full md:w-auto pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-gray-700 dark:text-slate-200 shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none cursor-pointer hover:bg-white dark:hover:bg-slate-700 selection:bg-emerald-500"
                             />
                         </div>
                     </div>
@@ -609,9 +609,9 @@ const DoctorDashboard: React.FC = () => {
                         </div>
 
                         {loading ? (
-                            <div className="p-8 text-center text-gray-400">Cargando agenda...</div>
+                            <div className="p-8 text-center text-gray-400 dark:text-slate-500">Cargando agenda...</div>
                         ) : citas.length === 0 ? (
-                            <div className="p-8 text-center text-gray-400">No hay citas programadas para hoy.</div>
+                            <div className="p-8 text-center text-gray-400 dark:text-slate-500">No hay citas programadas para hoy.</div>
                         ) : (
                             <div className="divide-y divide-gray-100">
                                 {(() => {

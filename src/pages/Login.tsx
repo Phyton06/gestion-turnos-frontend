@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield, Sun, Moon } from 'lucide-react';
+import { LogIn, AlertCircle, Stethoscope, User, Lock, Activity, Check, KeyRound, Mail, ArrowLeft, Shield, Sun, Moon, Eye, EyeOff } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { saveSession, isSessionValid, getStoredUser } from '../utils/auth';
 import { useTheme } from '../context/ThemeContext';
@@ -15,6 +15,7 @@ const Login: React.FC = () => {
   // Estados de validación dinámica
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [passwordValid, setPasswordValid] = useState<boolean | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [redirecting, setRedirecting] = useState(false);
   const [welcomeName, setWelcomeName] = useState('');
 
@@ -245,7 +246,7 @@ const Login: React.FC = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
                   className={`block w-full pl-10 pr-10 py-3 border rounded-lg leading-5 bg-white dark:bg-slate-700 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all shadow-sm
@@ -258,6 +259,18 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={handlePasswordChange}
                 />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors focus:outline-none"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword
+                    ? <EyeOff className="h-5 w-5" />
+                    : <Eye className="h-5 w-5" />
+                  }
+                </button>
               </div>
               {passwordValid === false && (
                 <p className="text-xs text-red-500 ml-1">La contraseña debe tener al menos 6 caracteres.</p>
@@ -295,8 +308,8 @@ const Login: React.FC = () => {
             </div>
           </form>
 
-          <div className="mt-8 text-center bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <p className="text-sm font-medium text-gray-500">
+          <div className="mt-8 text-center bg-gray-50 dark:bg-slate-700/40 rounded-xl p-4 border border-gray-100 dark:border-slate-600">
+            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
               ¿Eres paciente y no tienes cuenta?{' '}
               <Link to="/register" className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline inline-flex items-center gap-1 transition-colors">
                 Regístrate aquí <AlertCircle size={14} className="opacity-0 group-hover:opacity-100" />
@@ -309,7 +322,7 @@ const Login: React.FC = () => {
       {/* ── Modal de Restablecer Contraseña ───────────────────────────────── */}
       {showResetModal && (
         <div className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-slate-700">
             {/* Header */}
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 text-white flex items-center gap-3">
               <div className="bg-white/20 p-2 rounded-xl">
@@ -326,7 +339,7 @@ const Login: React.FC = () => {
             </div>
 
             {/* Progress bar */}
-            <div className="h-1 bg-gray-100">
+            <div className="h-1 bg-gray-100 dark:bg-slate-700">
               <div
                 className="h-full bg-indigo-500 transition-all duration-500"
                 style={{ width: `${(resetStep / 3) * 100}%` }}
@@ -337,8 +350,8 @@ const Login: React.FC = () => {
               {/* Mensaje de feedback */}
               {resetMessage && (
                 <div className={`mb-4 p-3 rounded-lg text-sm flex items-start gap-2 ${resetMessage.includes('Error') || resetMessage.includes('incorrecto') || resetMessage.includes('expirado')
-                  ? 'bg-red-50 text-red-700 border border-red-200'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+                  : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                   }`}>
                   <Shield size={16} className="flex-shrink-0 mt-0.5" />
                   <span>{resetMessage}</span>
@@ -348,7 +361,7 @@ const Login: React.FC = () => {
               {/* ── Paso 1: Email ── */}
               {resetStep === 1 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
                     Ingresa el correo electrónico asociado a tu cuenta.
                   </p>
                   <div className="relative">
@@ -360,7 +373,7 @@ const Login: React.FC = () => {
                       placeholder="tu-correo@ejemplo.com"
                       value={resetEmail}
                       onChange={e => setResetEmail(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                     />
                   </div>
                   <button
@@ -395,7 +408,7 @@ const Login: React.FC = () => {
               {/* ── Paso 2: Código ── */}
               {resetStep === 2 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
                     Ingresa el código de 6 caracteres que recibiste en tu correo.
                   </p>
                   {resetCountdown > 0 && (
@@ -414,7 +427,7 @@ const Login: React.FC = () => {
                     placeholder="ABC123"
                     value={resetCode}
                     onChange={e => setResetCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                    className="block w-full text-center text-2xl font-mono tracking-[0.5em] py-4 border-2 border-dashed border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-indigo-50/50 transition-all"
+                    className="block w-full text-center text-2xl font-mono tracking-[0.5em] py-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-indigo-50/50 dark:bg-indigo-900/20 text-gray-900 dark:text-white transition-all"
                   />
                   <button
                     onClick={async () => {
@@ -446,7 +459,7 @@ const Login: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => { setResetStep(1); setResetCode(''); setResetMessage(''); }}
-                    className="w-full py-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors flex items-center justify-center gap-1"
+                    className="w-full py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-1"
                   >
                     <ArrowLeft size={14} /> Volver a ingresar correo
                   </button>
@@ -456,7 +469,7 @@ const Login: React.FC = () => {
               {/* ── Paso 3: Nueva contraseña ── */}
               {resetStep === 3 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
                     Ingresa tu nueva contraseña.
                   </p>
                   <div className="relative">
@@ -468,7 +481,7 @@ const Login: React.FC = () => {
                       placeholder="Nueva contraseña (mín. 6 caracteres)"
                       value={resetNewPassword}
                       onChange={e => setResetNewPassword(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                     />
                   </div>
                   <div className="relative">
@@ -480,7 +493,7 @@ const Login: React.FC = () => {
                       placeholder="Confirmar contraseña"
                       value={resetConfirmPassword}
                       onChange={e => setResetConfirmPassword(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                      className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                     />
                   </div>
                   {resetNewPassword.length > 0 && resetNewPassword.length < 6 && (
@@ -536,7 +549,7 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowResetModal(false)}
-                className="w-full mt-3 py-2 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                className="w-full mt-3 py-2 text-sm text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               >
                 Cancelar
               </button>
